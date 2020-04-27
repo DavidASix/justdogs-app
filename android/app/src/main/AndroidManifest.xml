@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.strollerjustdogs">
+  package="com.dave6.stroller.justdogs">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -22,6 +22,58 @@
         </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
+
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_name"
+        android:value="General"/>
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_description"
+        android:value="asdf"/>
+      <!-- Change the resource name to your App's accent color - or any other color you want -->
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_color"
+        android:resource="@color/white"/> <!-- or @android:color/{name} to use a standard color -->
+      <meta-data
+        android:name="com.google.firebase.messaging.default_notification_icon"
+        android:resource="@mipmap/ic_notification" />
+        <!-- INFO TO ENABLE JS LIBRARY TO INTERACTE WITH JAVA -->
+        <receiver
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="${applicationId}" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
+
+        <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"/>
+        <!-- END   INFO TO ENABLE JS LIBRARY TO INTERACTE WITH JAVA -->
+        <!-- GCM LISTENER
+        <service
+            android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerServiceGcm"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        -->
+
+        <!-- BEGIN FCM  LISTENER INFO -->
+        <service
+          android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
+          android:exported="false" >
+          <intent-filter>
+            <action android:name="com.google.firebase.MESSAGING_EVENT" />
+          </intent-filter>
+        </service>
+        <!-- END FCM  LISTENER INFO -->
+        <!-- END NOTIFATION INFORMATION -->
 
       <!-- Ad's -->
       <meta-data
