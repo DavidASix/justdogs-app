@@ -5,8 +5,9 @@ import {
   Text,
   StatusBar,
 } from 'react-native';
-import LottieView from 'lottie-react-native';/*
-import { AdMobBanner } from 'react-native-admob'
+import LottieView from 'lottie-react-native';
+import { AdMobBanner } from 'react-native-admob';
+/*
 import PushNotification from 'react-native-push-notification'
 */
 class App extends React.Component {/*
@@ -57,7 +58,7 @@ class App extends React.Component {/*
             <Text>
               Notification FCM Token: {this.state.token}
             </Text>
-
+*/}
             <AdMobBanner
               adSize='banner'
               adUnitID='ca-app-pub-3940256099942544/6300978111'
@@ -65,7 +66,7 @@ class App extends React.Component {/*
               onDidFailToReceiveAdWithError={() => console.log('no ad')}
               style={{ position: 'absolute', bottom: 0 }}
             />
-*/}
+
           </View>
         </SafeAreaView>
       </>
