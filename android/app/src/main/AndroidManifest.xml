@@ -33,48 +33,24 @@
       <meta-data
         android:name="com.google.firebase.messaging.default_notification_icon"
         android:resource="@mipmap/ic_notification" />
-        <!-- INFO TO ENABLE JS LIBRARY TO INTERACTE WITH JAVA -->
-        <receiver
-            android:name="com.google.android.gms.gcm.GcmReceiver"
-            android:exported="true"
-            android:permission="com.google.android.c2dm.permission.SEND" >
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <category android:name="${applicationId}" />
-            </intent-filter>
-        </receiver>
+
 
         <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
-
         <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
         <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"/>
-        <!-- END   INFO TO ENABLE JS LIBRARY TO INTERACTE WITH JAVA -->
-        <!-- GCM LISTENER
+
         <service
-            android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerServiceGcm"
+            android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
             android:exported="false" >
             <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        -->
-
-        <!-- BEGIN FCM  LISTENER INFO -->
-        <service
-          android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
-          android:exported="false" >
-          <intent-filter>
-            <action android:name="com.google.firebase.MESSAGING_EVENT" />
-          </intent-filter>
-        </service>
-        <!-- END FCM  LISTENER INFO -->
-        <!-- END NOTIFATION INFORMATION -->
-
+                
       <!-- Ad's -->
       <meta-data
         android:name="com.google.android.gms.ads.APPLICATION_ID"

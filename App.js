@@ -8,7 +8,14 @@ import {
 import LottieView from 'lottie-react-native';
 import { AdMobBanner } from 'react-native-admob';
 
-import PushNotification from 'react-native-push-notification'
+import PushNotification from 'react-native-push-notification';
+import { setCustomTextInput, setCustomText } from 'react-native-global-props';
+
+import InfiniteScroll from './src/InfiniteScroll';
+
+const fontFamilyProps = { style: { fontSize: 16, fontFamily: 'fenix' } };
+setCustomTextInput(fontFamilyProps);
+setCustomText(fontFamilyProps);
 
 class App extends React.Component {
   constructor(props) {
@@ -32,7 +39,7 @@ class App extends React.Component {
       },
       // Sender ID comes from firebase, see docs here:
       // https://github.com/zo0r/react-native-push-notification
-      senderID: "14949329329",
+      senderID: "87291361734",
       // Unsure about this but tutorial says keep it false
       popInitialNotification: false,
       // Yes, we need permission
@@ -45,29 +52,8 @@ class App extends React.Component {
     return (
       <>
         <StatusBar barStyle="dark-content" />
-        <SafeAreaView style={{ borderWidth: 5, borderColor: 'green', flex: 1 }}>
-          <View style={{ borderWidth: 1, justifyContent: 'center', alignItems: 'center', flex: 1, width: '100%' }}>
-            <Text>
-              Lottie + AdMob + Noti Test
-            </Text>
-
-            <View style={{ width: 200, height: 200, borderWidth: 1, borderColor: 'red' }}>
-              <LottieView source={require('./src/images/doggieTrot.json')} autoPlay loop />
-            </View>
-
-            <Text>
-              Notification FCM Token: {this.state.token}
-            </Text>
-
-            <AdMobBanner
-              adSize='banner'
-              adUnitID='ca-app-pub-3940256099942544/6300978111'
-              testDevices={[AdMobBanner.simulatorId]}
-              onDidFailToReceiveAdWithError={() => console.log('no ad')}
-              style={{ position: 'absolute', bottom: 0 }}
-            />
-
-          </View>
+        <SafeAreaView style={{ borderWidth: 0, flex: 1 }}>
+          <InfiniteScroll />
         </SafeAreaView>
       </>
     );
