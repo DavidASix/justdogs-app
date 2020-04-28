@@ -45,6 +45,8 @@ public class MainApplication extends Application implements ReactApplication {
 
   @Override
   public void onCreate() {
+    // Set theme to regular App theme rather than splash
+    setTheme(R.style.AppTheme);
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
