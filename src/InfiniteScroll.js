@@ -17,80 +17,8 @@ import {
 } from 'react-native-admob'
 import axios from 'axios';
 import * as c from './constants';
+import { ImageItem, ListHeader } from './listComponents';
 
-//Return a semi an darker RGB color from a seed value. Accepts darker as int between 0 and 255 to dim the color
-// Darker is used to ensure that light text is readable against the BG
-const randomBgColor = (seed, darker = 40) => (`rgb(
-  ${Math.abs((seed % 2 ? 255 - seed % 255 : seed % 255) - darker)},
-  ${Math.abs(seed % 255 - darker)},
-  ${Math.abs((seed % 2 ? seed % 255 : 255 - seed % 255) - darker)})`);
-
-// Image Item is the render component for our FlatList
-const ImageItem = ({ image, parentLayout }) => {
-  // Image size is used to ensure a (mostly) random quote is selected to go with the image, and that the quote would not change on a re-render (as it would with Math.random)
-  let  quoteIndex = image.size % c.quotes.dog.length;
-  if (!parentLayout.height) return null;
-  return (
-      <View style={[styles.imageItemContaier, { height: parentLayout.height, backgroundColor: randomBgColor(image.size) }]}>
-
-        <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
-          <View style={{ height: 150, width: '100%' }}>
-            <LottieView source={require('./images/doggieTrot.json')} autoPlay loop />
-          </View>
-          <Text style={{ color: 'white', fontSize: 14, margin: 10, textAlign: 'center' }}>
-            {
-              image.url.slice(-3) === 'gif' ? 'This GIF will take longer to load, but it\'s worth it!' :
-              image.size > 2200000 ? 'This is a larger image, so it may take longer to load. Probably pretty cute though.' :
-              ''
-            }
-          </Text>
-        </View>
-
-        <Image
-          style={{ height: '100%', width: '100%'}}
-          source={{ uri: image.url }}
-          resizeMode='cover'
-        />
-
-        <View style={styles.textBox}>
-          <Text style={{ color: 'white', fontSize: 18 }}>
-            {c.quotes.dog[Math.floor(quoteIndex)]}
-          </Text>
-        </View>
-
-      </View>
-  )
-};
-
-const ListHeader = ({ parentLayout }) => {
-  if (!parentLayout.height) return null;
-  return (
-    <View style={[styles.imageItemContaier, { height: parentLayout.height, backgroundColor: '#d6d6d6' }]}>
-
-    <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
-
-      <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: 'white' }}>
-          Stroller
-        </Text>
-        <Text style={{ fontFamily: 'blenda', color: 'white', fontSize: 36, margin: 10, textAlign: 'center' }}>
-          Only Dogs
-        </Text>
-      </View>
-
-      <View style={{ height: 150, width: '100%' }}>
-        <LottieView source={require('./images/doggieTrot.json')} autoPlay loop />
-      </View>
-    </View>
-
-      <View style={styles.textBox}>
-        <Text style={{ color: 'white', fontSize: 18 }}>
-          Swipe up to get started
-        </Text>
-      </View>
-    </View>
-  );
-}
 
 class InfiniteScroll extends Component {
   constructor(props) {
@@ -111,6 +39,7 @@ class InfiniteScroll extends Component {
     AdMobInterstitial.setAdUnitID('ca-app-pub-7620983984875887/2283824628');
     AdMobInterstitial.setTestDevices([AdMobInterstitial.simulatorId]);
     AdMobInterstitial.requestAd()
+      .then(() => console.log('ad loaded'))
       .catch(error => console.log(error));
     try {
       let newImage = await this.getNewUrl();
@@ -131,12 +60,7 @@ class InfiniteScroll extends Component {
   }
 
   async handleViewChange(info) {
-    let { maxViewed, images, currentImageDisplaying } = this.state
-
-        console.log('Currently Displaying: ', info.changed[0].index);
-        console.log('Max Displayed: ', maxViewed);
-        console.log('image array is this long --> ', this.state.images.length)
-        console.log('--------------------------------------------------------')
+    let { maxViewed, images, currentImageDisplaying } = this.state;
     // Header screen is not counted as an indexed item, so swiping from header to first dog is 0 -> 0 :
     // info.changed[0].index on header is 0, info.changed[0].index on dog 0 is 0
     // Update which image is currently being displayed. This is used to find which image to share via share button
@@ -154,8 +78,14 @@ class InfiniteScroll extends Component {
       }
 
       // Every 25 images show an interstitial ad
-      if (info.changed[0].index % 18 === 0) {
-        AdMobInterstitial.showAd()
+      if (info.changed[0].index % 19 === 0) {
+        try {
+          await AdMobInterstitial.requestAd();
+        } catch (err) {
+          console.log('Error getting ad', err);
+        } finally {
+          AdMobInterstitial.showAd();
+        }
       }
 
     }
@@ -183,18 +113,18 @@ class InfiniteScroll extends Component {
       return (
         <View style={[styles.imageItemContaier, { height: pageLayout.height, backgroundColor: '#d6d6d6' }]}>
 
-        <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
-
-          <Text style={{ position: 'absolute' }}>
-            Square Ad
-          </Text>
-          <AdMobBanner
-            adSize="mediumRectangle"
-            adUnitID='ca-app-pub-7620983984875887/1512888187'
-            testDevices={[AdMobBanner.simulatorId]}
-            onDidFailToReceiveAdWithError={() => console.log('no5banner')}
-          />
-        </View>
+          <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
+            <Image
+              source={require('./images/logo.png')}
+              resizeMode='contain'
+              style={{ height: '100%', width: '100%', position: 'absolute' }} />
+            <AdMobBanner
+              adSize="mediumRectangle"
+              adUnitID='ca-app-pub-7620983984875887/1512888187'
+              testDevices={[AdMobBanner.simulatorId]}
+              onDidFailToReceiveAdWithError={() => console.log('no5banner')}
+            />
+          </View>
 
           <View style={styles.textBox}>
             <Text style={{ color: 'white', fontSize: 18 }}>
@@ -239,9 +169,10 @@ class InfiniteScroll extends Component {
 
           </View>
           <View style={{ justifyContent: 'center', alignItems: 'center', height: 51, width: '100%', borderTopWidth: 1 }}>
-            <Text style={{ position: 'absolute' }}>
-              Advertisement
-            </Text>
+            <Image
+              source={require('./images/logo.png')}
+              resizeMode='contain'
+              style={{ height: '100%', width: '100%', position: 'absolute' }} />
             <AdMobBanner
               adSize='banner'
               adUnitID='ca-app-pub-7620983984875887/2411144689'
