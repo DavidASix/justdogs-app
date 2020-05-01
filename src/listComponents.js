@@ -13,7 +13,7 @@ const randomBgColor = (seed, darker = 40) => (`rgb(
 // Image Item is the render component for our FlatList
 export class ImageItem extends PureComponent {
   render() {
-    let { image, parentLayout } = this.props;
+    let { image, parentLayout, zoom } = this.props;
     // Image size is used to ensure a (mostly) random quote is selected to go with the image, and that the quote would not change on a re-render (as it would with Math.random)
     let  quoteIndex = image.size % c.quotes.dog.length;
     if (!parentLayout.height) return null;
@@ -36,7 +36,7 @@ export class ImageItem extends PureComponent {
           <Image
             style={{ height: '100%', width: '100%'}}
             source={{ uri: image.url }}
-            resizeMode='cover'
+            resizeMode={zoom ? 'cover' : 'contain'}
           />
 
           <View style={styles.textBox}>

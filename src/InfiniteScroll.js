@@ -9,13 +9,11 @@ import {
   Share
 } from 'react-native';
 import LottieView from 'lottie-react-native';
-import {
-  AdMobBanner,
-  AdMobInterstitial,
-  PublisherBanner,
-  AdMobRewarded
-} from 'react-native-admob'
+import AsyncStorage from '@react-native-community/async-storage';
+import PushNotification from 'react-native-push-notification'
+import { AdMobBanner, AdMobInterstitial } from 'react-native-admob'
 import axios from 'axios';
+
 import * as c from './constants';
 import { ImageItem, ListHeader } from './listComponents';
 
@@ -30,26 +28,53 @@ class InfiniteScroll extends Component {
       pageLayout: false,
       currentImageDisplaying: false,
       maxViewed: 0,
-      images: []
+      images: [],
+      zoom: true,
+      loading: true
     };
   }
 
   async componentDidMount() {
+      AdMobInterstitial.setAdUnitID('ca-app-pub-7620983984875887/2283824628');
+      AdMobInterstitial.setTestDevices([AdMobInterstitial.simulatorId]);
+      AdMobInterstitial.requestAd()
+        .then(() => console.log('ad loaded'))
+        .catch(error => console.log(error));
+      try {
+        // Get initial images to render
+        let newImage = await this.getNewUrl();
+        let newImage1 = await this.getNewUrl();
+        let newImage2 = await this.getNewUrl();
+        let newImage3 = await this.getNewUrl();
+        this.setState({ images: [...this.state.images, newImage, newImage1, newImage2, newImage3] });
 
-    AdMobInterstitial.setAdUnitID('ca-app-pub-7620983984875887/2283824628');
-    AdMobInterstitial.setTestDevices([AdMobInterstitial.simulatorId]);
-    AdMobInterstitial.requestAd()
-      .then(() => console.log('ad loaded'))
-      .catch(error => console.log(error));
-    try {
-      let newImage = await this.getNewUrl();
-      let newImage1 = await this.getNewUrl();
-      let newImage2 = await this.getNewUrl();
-      let newImage3 = await this.getNewUrl();
-      this.setState({ images: [...this.state.images, newImage, newImage1, newImage2, newImage3] });
-    } catch (err) {
-      console.log('error in compmount')
-    }
+        // check if a user has logged in before
+        let uid = await AsyncStorage.getItem('@uid')
+        let { data } = await axios.post(
+          `${c.urls.dave}checkUser`, { webkey: c.webkey, package: c.pn, uid });
+        // Store the UID returned from the server
+        await AsyncStorage.setItem('@uid', data.uid);
+
+        // setup push notifications
+        PushNotification.configure({
+          onRegister: async ({ token }) => {
+            await axios.post(
+              `${c.urls.dave}updateFCMToken`,
+              { webkey: c.webkey, package: c.pn, userId: data.id, token });
+          },
+          onNotification: (notification) => {
+            // Notification was received
+          },
+          senderID: "87291361734",
+          popInitialNotification: false,
+          // Yes, we need permission
+          requestPermissions: true
+        });
+      } catch (err) {
+        console.log('err ', err)
+      } finally {
+        this.setState({ loading: false });
+      }
   }
 
   onPressShare = async () => {
@@ -108,7 +133,7 @@ class InfiniteScroll extends Component {
   }
 
   renderListItem(item, i) {
-    let { pageLayout, images } = this.state;
+    let { pageLayout, images, zoom } = this.state;
     if (item === 'largeBanner') {
       return (
         <View style={[styles.imageItemContaier, { height: pageLayout.height, backgroundColor: '#d6d6d6' }]}>
@@ -134,12 +159,20 @@ class InfiniteScroll extends Component {
         </View>
       );
     }
-    return <ImageItem index={i} image={item} parentLayout={this.state.pageLayout}/>;
+    return <ImageItem index={i} image={item} parentLayout={this.state.pageLayout} zoom={zoom} />;
   }
 
   render() {
-    let { pageLayout, images, currentImageDisplaying } = this.state;
-
+    let { pageLayout, images, currentImageDisplaying, loading, zoom } = this.state;
+    if (loading) {
+      return (
+        <View style={{ width: '100%', height: '100%', paddingTop: 25, justifyContent: 'center', alignItems: 'center' }}>
+          <Image
+            source={require('./images/logo.png')}
+            style={{ height: 200, width: 200 }} />
+        </View>
+      );
+    }
     return (
         <View
           style={{ height: '100%', width: '100%', backgroundColor: '#d6d6d6' }}>
@@ -158,14 +191,25 @@ class InfiniteScroll extends Component {
               ListHeaderComponent={() => (<ListHeader parentLayout={this.state.pageLayout} />)}
               renderItem={({ item, i }) => this.renderListItem(item, i)} />
 
+            <View style={styles.buttonContainer}>
               <TouchableOpacity
-                style={styles.shareButton}
+                style={[styles.button, { width: 60, height: 60 }]}
                 onPress={this.onPressShare}>
                 <Image
                   style={{ width: '70%', height: '70%' }}
                   source={require('./images/share3.png')}
                   />
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => this.setState({ zoom: !zoom })}>
+                <Image
+                  style={{ width: '70%', height: '70%' }}
+                  source={require('./images/share3.png')}
+                  />
+              </TouchableOpacity>
+            </View>
 
           </View>
           <View style={{ justifyContent: 'center', alignItems: 'center', height: 51, width: '100%', borderTopWidth: 1 }}>
@@ -195,14 +239,22 @@ const styles = {
   list: {
     width: '100%',
   },
-  shareButton: {
+  buttonContainer: {
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
     top: 5,
     right: 5,
-    height: 60,
+    flex: 0,
     width: 60,
+  },
+  button: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 40,
+    width: 40,
+    marginVertical: 5,
     borderRadius: 30,
     backgroundColor: c.colors.accent,
     borderColor: 'grey',

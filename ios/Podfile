@@ -81,6 +81,8 @@ target 'strollerjustdogs' do
 
   pod 'react-native-admob', :path => '../node_modules/react-native-admob'
 
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
+
   target 'strollerjustdogsTests' do
     inherit! :complete
     # Pods for testing
