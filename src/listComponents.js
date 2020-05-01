@@ -32,13 +32,11 @@ export class ImageItem extends PureComponent {
               }
             </Text>
           </View>
-
           <Image
-            style={{ height: '100%', width: '100%'}}
+            style={{ height: '100%', width: '100%' }}
             source={{ uri: image.url }}
             resizeMode={zoom ? 'cover' : 'contain'}
           />
-
           <View style={styles.textBox}>
             <Text style={{ color: 'white', fontSize: 18 }}>
               {c.quotes.dog[Math.floor(quoteIndex)]}
@@ -57,32 +55,31 @@ export class ListHeader extends PureComponent {
     return (
       <View style={[styles.imageItemContaier, { height: parentLayout.height, backgroundColor: '#d6d6d6' }]}>
 
-      <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
+        <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
+          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: 'white' }}>
+              Stroller
+            </Text>
+            <Text style={{ fontFamily: 'blenda', color: 'white', fontSize: 36, margin: 10, textAlign: 'center' }}>
+              Just Dogs
+            </Text>
+          </View>
 
-        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: 'white' }}>
-            Stroller
-          </Text>
-          <Text style={{ fontFamily: 'blenda', color: 'white', fontSize: 36, margin: 10, textAlign: 'center' }}>
-            Only Dogs
-          </Text>
+          <View style={{ height: 150, width: '100%' }}>
+            <LottieView source={require('./images/doggieTrot.json')} autoPlay loop />
+          </View>
         </View>
-
-        <View style={{ height: 150, width: '100%' }}>
-          <LottieView source={require('./images/doggieTrot.json')} autoPlay loop />
-        </View>
-      </View>
 
         <View style={styles.textBox}>
           <Text style={{ color: 'white', fontSize: 18 }}>
             Swipe up to get started
           </Text>
         </View>
+
       </View>
     );
   }
 }
-
 
 const styles = {
   imageItemContaier: {

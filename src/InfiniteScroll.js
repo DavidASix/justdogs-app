@@ -17,7 +17,6 @@ import axios from 'axios';
 import * as c from './constants';
 import { ImageItem, ListHeader } from './listComponents';
 
-
 class InfiniteScroll extends Component {
   constructor(props) {
     super(props)
@@ -78,7 +77,7 @@ class InfiniteScroll extends Component {
   }
 
   onPressShare = async () => {
-    let appUrl = '';
+    let appUrl = 'https://play.google.com/store/apps/details?id=com.dave6.www.stroller.justdogs';
     let message = `Come look at some cute dogs with me! ${appUrl}`;
     if (this.state.currentImageDisplaying !== false) message = `Check out this dog I found on Dog Scroll! ${this.state.images[this.state.currentImageDisplaying].url} See more on the app: ${appUrl}`;
     await Share.share({ message });
@@ -95,7 +94,7 @@ class InfiniteScroll extends Component {
       // Every 5 images shown add an Advertisement to the image stack
       // As the image stack starts with 3 images, and begins counting at 0, the ad will show one the second page change from when it's loaded
       if (info.changed[0].index % 7 === 0) {
-        console.log('Ad pushed to stack');
+        //console.log('Ad pushed to stack');
         this.setState({ maxViewed: info.changed[0].index, images: [...images, 'largeBanner'] });
       } else {
         let  newImage = await this.getNewUrl();
@@ -126,7 +125,6 @@ class InfiniteScroll extends Component {
         if (data.url.slice(-3) === 'mp4' || data.url.slice(-4) === 'webm') return resolve(this.getNewUrl());
         resolve({ url: data.url, size: data.fileSizeBytes });
       } catch (err) {
-        console.log('getNewUrl error: ', err);
         return reject(err);
       }
     });
@@ -176,7 +174,10 @@ class InfiniteScroll extends Component {
     return (
         <View
           style={{ height: '100%', width: '100%', backgroundColor: '#d6d6d6' }}>
-          <View style={styles.scrollerContainer} onLayout={({ nativeEvent }) => this.setState({ pageLayout: nativeEvent.layout })}>
+          <View
+            style={styles.scrollerContainer}
+            onLayout={({ nativeEvent }) => this.setState({ pageLayout: nativeEvent.layout })}>
+
             <FlatList
               viewabilityConfig={this.viewabilityConfig}
               snapToAlignment={'top'}
@@ -187,7 +188,7 @@ class InfiniteScroll extends Component {
               data={images}
               initialNumToRender={4}
               keyExtractor={(item, index) => `id_${index}`}
-              style={styles.list}
+              style={{ width: '100%' }}
               ListHeaderComponent={() => (<ListHeader parentLayout={this.state.pageLayout} />)}
               renderItem={({ item, i }) => this.renderListItem(item, i)} />
 
@@ -200,32 +201,39 @@ class InfiniteScroll extends Component {
                   source={require('./images/share3.png')}
                   />
               </TouchableOpacity>
-
               <TouchableOpacity
                 style={styles.button}
                 onPress={() => this.setState({ zoom: !zoom })}>
                 <Image
                   style={{ width: '70%', height: '70%' }}
-                  source={require('./images/share3.png')}
+                  source={zoom ? require('./images/minus.png') : require('./images/plus.png')}
                   />
               </TouchableOpacity>
+              {/*}<TouchableOpacity
+                style={styles.button}
+                onPress={this.onPressRemoveAds}>
+                <Image
+                  style={{ width: '85%', height: '85%' }}
+                  source={require('./images/noads.png')}
+                  />
+              </TouchableOpacity>*/}
             </View>
 
           </View>
-          <View style={{ justifyContent: 'center', alignItems: 'center', height: 51, width: '100%', borderTopWidth: 1 }}>
-            <Image
-              source={require('./images/logo.png')}
-              resizeMode='contain'
-              style={{ height: '100%', width: '100%', position: 'absolute' }} />
-            <AdMobBanner
-              adSize='banner'
-              adUnitID='ca-app-pub-7620983984875887/2411144689'
-              testDevices={[AdMobBanner.simulatorId]}
-              onDidFailToReceiveAdWithError={() => console.log('no ad')}
-            />
-          </View>
+        <View style={{ justifyContent: 'center', alignItems: 'center', height: 51, width: '100%', borderTopWidth: 1 }}>
+          <Image
+            source={require('./images/logo.png')}
+            resizeMode='contain'
+            style={{ height: '100%', width: '100%', position: 'absolute' }} />
+          <AdMobBanner
+            adSize='banner'
+            adUnitID='ca-app-pub-7620983984875887/2411144689'
+            testDevices={[AdMobBanner.simulatorId]}
+            onDidFailToReceiveAdWithError={() => console.log('no ad')}
+          />
         </View>
-    )
+      </View>
+    );
   }
 }
 
@@ -236,11 +244,7 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center'
   },
-  list: {
-    width: '100%',
-  },
   buttonContainer: {
-    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
@@ -252,8 +256,8 @@ const styles = {
   button: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: 40,
-    width: 40,
+    height: 50,
+    width: 50,
     marginVertical: 5,
     borderRadius: 30,
     backgroundColor: c.colors.accent,
