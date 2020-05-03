@@ -151,7 +151,7 @@ class InfiniteScroll extends Component {
 
           <View style={styles.textBox}>
             <Text style={{ color: 'white', fontSize: 18 }}>
-              These ad's pay for the developer's dog's toys!
+              Viewing ads helps support individual app developers. Thank you!
             </Text>
           </View>
         </View>
