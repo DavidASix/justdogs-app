@@ -83,6 +83,8 @@ target 'strollerjustdogs' do
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
 
+  pod 'RNIap', :path => '../node_modules/react-native-iap'
+
   target 'strollerjustdogsTests' do
     inherit! :complete
     # Pods for testing

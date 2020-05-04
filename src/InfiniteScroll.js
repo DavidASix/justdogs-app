@@ -12,6 +12,7 @@ import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotification from 'react-native-push-notification'
 import { AdMobBanner, AdMobInterstitial } from 'react-native-admob'
+import * as RNIap from 'react-native-iap';
 import axios from 'axios';
 
 import * as c from './constants';
@@ -81,6 +82,10 @@ class InfiniteScroll extends Component {
     let message = `Come look at some cute dogs with me! ${appUrl}`;
     if (this.state.currentImageDisplaying !== false) message = `Check out this dog I found on Dog Scroll! ${this.state.images[this.state.currentImageDisplaying].url} See more on the app: ${appUrl}`;
     await Share.share({ message });
+  }
+
+  onPressRemoveAds = async () => {
+    console.log('remove ads');
   }
 
   async handleViewChange(info) {
@@ -209,29 +214,9 @@ class InfiniteScroll extends Component {
                   source={zoom ? require('./images/minus.png') : require('./images/plus.png')}
                   />
               </TouchableOpacity>
-              {/*}<TouchableOpacity
-                style={styles.button}
-                onPress={this.onPressRemoveAds}>
-                <Image
-                  style={{ width: '85%', height: '85%' }}
-                  source={require('./images/noads.png')}
-                  />
-              </TouchableOpacity>*/}
             </View>
 
           </View>
-        <View style={{ justifyContent: 'center', alignItems: 'center', height: 51, width: '100%', borderTopWidth: 1 }}>
-          <Image
-            source={require('./images/logo.png')}
-            resizeMode='contain'
-            style={{ height: '100%', width: '100%', position: 'absolute' }} />
-          <AdMobBanner
-            adSize='banner'
-            adUnitID='ca-app-pub-7620983984875887/2411144689'
-            testDevices={[AdMobBanner.simulatorId]}
-            onDidFailToReceiveAdWithError={() => console.log('no ad')}
-          />
-        </View>
       </View>
     );
   }

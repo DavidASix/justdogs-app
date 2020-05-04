@@ -58,7 +58,7 @@ export class ListHeader extends PureComponent {
         <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
           <View style={{ justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{ color: 'white' }}>
-              Stroller
+              Welcome to
             </Text>
             <Text style={{ fontFamily: 'blenda', color: 'white', fontSize: 36, margin: 10, textAlign: 'center' }}>
               Just Dogs
