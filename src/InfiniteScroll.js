@@ -9,8 +9,6 @@ import {
   Share
 } from 'react-native';
 import LottieView from 'lottie-react-native';
-import AsyncStorage from '@react-native-community/async-storage';
-import PushNotification from 'react-native-push-notification'
 import { AdMobBanner, AdMobInterstitial } from 'react-native-admob'
 import * as RNIap from 'react-native-iap';
 import axios from 'axios';
@@ -23,14 +21,15 @@ class InfiniteScroll extends Component {
     super(props)
     this.viewabilityConfig = { viewAreaCoveragePercentThreshold: 85 }
     this.handleViewChange = this.handleViewChange.bind(this);
-
     this.state = {
       pageLayout: false,
       currentImageDisplaying: false,
       maxViewed: 0,
       images: [],
       zoom: true,
-      loading: true
+      loading: true,
+      products: false,
+      showAds: true
     };
   }
 
@@ -40,6 +39,7 @@ class InfiniteScroll extends Component {
       AdMobInterstitial.requestAd()
         .then(() => console.log('ad loaded'))
         .catch(error => console.log(error));
+
       try {
         // Get initial images to render
         let newImage = await this.getNewUrl();
@@ -48,37 +48,20 @@ class InfiniteScroll extends Component {
         let newImage3 = await this.getNewUrl();
         this.setState({ images: [...this.state.images, newImage, newImage1, newImage2, newImage3] });
 
-        // check if a user has logged in before
-        let uid = await AsyncStorage.getItem('@uid')
-        let { data } = await axios.post(
-          `${c.urls.dave}checkUser`, { webkey: c.webkey, package: c.pn, uid });
-        // Store the UID returned from the server
-        await AsyncStorage.setItem('@uid', data.uid);
-
-        // setup push notifications
-        PushNotification.configure({
-          onRegister: async ({ token }) => {
-            await axios.post(
-              `${c.urls.dave}updateFCMToken`,
-              { webkey: c.webkey, package: c.pn, userId: data.id, token });
-          },
-          onNotification: (notification) => {
-            // Notification was received
-          },
-          senderID: "87291361734",
-          popInitialNotification: false,
-          // Yes, we need permission
-          requestPermissions: true
-        });
       } catch (err) {
         console.log('err ', err)
       } finally {
-        this.setState({ loading: false });
+        this.setState({ loading: false, showAds: this.props.showAds });
       }
   }
 
+  componentDidUpdate(prevProps) {
+    console.log('Show ads prop changed: ', prevProps.showAds !== this.props.showAds, ' this.props.showAds = ', this.props.showAds);
+    if (prevProps.showAds !== this.props.showAds) this.setState({ showAds: this.props.showAds });
+  }
+
   onPressShare = async () => {
-    let appUrl = 'https://play.google.com/store/apps/details?id=com.dave6.www.stroller.justdogs';
+    let appUrl = 'https://play.google.com/store/apps/details?id=com.dave6.stroller.justdogs';
     let message = `Come look at some cute dogs with me! ${appUrl}`;
     if (this.state.currentImageDisplaying !== false) message = `Check out this dog I found on Dog Scroll! ${this.state.images[this.state.currentImageDisplaying].url} See more on the app: ${appUrl}`;
     await Share.share({ message });
@@ -86,8 +69,33 @@ class InfiniteScroll extends Component {
 
   onPressRemoveAds = async () => {
     console.log('remove ads');
+    try {
+      await RNIap.requestPurchase('com.dave6.www.stroller.justdogs.noads', false);
+    } catch (err) {
+      console.log('removeAds error: ', err);
+    }
   }
-
+/*
+[
+  {
+    "currency": "CAD",
+    "description": "This will provide the developer with beer money for their next outing wtb's",
+    "freeTrialPeriodAndroid": "",
+    "iconUrl": "",
+    "introductoryPrice": "",
+    "introductoryPriceCyclesAndroid": "",
+    "introductoryPricePeriodAndroid": "",
+    "localizedPrice": "$2.99",
+    "originalJson": "{\"skuDetailsToken\":\"AEuhp4LuCpZvXJicDBmbhV3k7NmhiSvyUqh6CxyNMdAR767A4PSXynqTuaepLx16H3YX\",\"productId\":\"com.dave6.www.stroller.justdogs.beer\",\"type\":\"inapp\",\"price\":\"$2.99\",\"price_amount_micros\":2990000,\"price_currency_code\":\"CAD\",\"title\":\"Buy the developer a beer (Just Dogs)\",\"description\":\"This will provide the developer with beer money for their next outing wtb's\"}",
+    "originalPrice": "2.99",
+    "price": "2.99",
+    "productId": "com.dave6.www.stroller.justdogs.beer",
+    "subscriptionPeriodAndroid": "",
+    "title": "Buy the developer a beer (Just Dogs)",
+    "type": "inapp"
+  }
+]
+*/
   async handleViewChange(info) {
     let { maxViewed, images, currentImageDisplaying } = this.state;
     // Header screen is not counted as an indexed item, so swiping from header to first dog is 0 -> 0 :
@@ -98,7 +106,7 @@ class InfiniteScroll extends Component {
     if (maxViewed < info.changed[0].index) {
       // Every 5 images shown add an Advertisement to the image stack
       // As the image stack starts with 3 images, and begins counting at 0, the ad will show one the second page change from when it's loaded
-      if (info.changed[0].index % 7 === 0) {
+      if (info.changed[0].index % 7 === 0 && this.state.showAds) {
         //console.log('Ad pushed to stack');
         this.setState({ maxViewed: info.changed[0].index, images: [...images, 'largeBanner'] });
       } else {
@@ -107,7 +115,7 @@ class InfiniteScroll extends Component {
       }
 
       // Every 25 images show an interstitial ad
-      if (info.changed[0].index % 19 === 0) {
+      if (info.changed[0].index % 19 === 0 && this.state.showAds) {
         try {
           await AdMobInterstitial.requestAd();
         } catch (err) {
@@ -165,6 +173,40 @@ class InfiniteScroll extends Component {
     return <ImageItem index={i} image={item} parentLayout={this.state.pageLayout} zoom={zoom} />;
   }
 
+  renderBottomAd() {
+    if (this.state.showAds) {
+      return (
+        <View style={{ justifyContent: 'center', alignItems: 'center', height: 51, width: '100%', borderTopWidth: 1 }}>
+          <Image
+            source={require('./images/logo.png')}
+            resizeMode='contain'
+            style={{ height: '100%', width: '100%', position: 'absolute' }} />
+          <AdMobBanner
+            adSize='banner'
+            adUnitID='ca-app-pub-7620983984875887/2411144689'
+            testDevices={[AdMobBanner.simulatorId]}
+            onDidFailToReceiveAdWithError={() => console.log('no ad')}
+          />
+        </View>
+      );
+    }
+  }
+
+  renderNoAdsButton() {
+    if (this.state.showAds) {
+      return (
+        <TouchableOpacity
+          style={styles.button}
+          onPress={this.onPressRemoveAds}>
+          <Image
+            style={{ width: '85%', height: '85%' }}
+            source={require('./images/noads.png')}
+            />
+        </TouchableOpacity>
+      );
+    }
+  }
+
   render() {
     let { pageLayout, images, currentImageDisplaying, loading, zoom } = this.state;
     if (loading) {
@@ -214,9 +256,11 @@ class InfiniteScroll extends Component {
                   source={zoom ? require('./images/minus.png') : require('./images/plus.png')}
                   />
               </TouchableOpacity>
+              {this.renderNoAdsButton()}
             </View>
 
           </View>
+          {this.renderBottomAd()}
       </View>
     );
   }

@@ -5,5 +5,5 @@ module.exports = {
       android: null, // disable Android autolinking
       ios: null //disable iOS autolinking
     },
-  },
+  }
 };

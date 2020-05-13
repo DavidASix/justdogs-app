@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { setCustomTextInput, setCustomText } from 'react-native-global-props';
 
-import InfiniteScroll from './src/InfiniteScroll';
+import Loading from './src/Loading';
 
 const fontFamilyProps = { style: { fontSize: 16, fontFamily: 'fenix' } };
 setCustomTextInput(fontFamilyProps);
@@ -24,8 +24,8 @@ class App extends React.Component {
     return (
       <>
         <StatusBar barStyle="dark-content" />
-        <SafeAreaView style={{ borderWidth: 0, flex: 1 }}>
-          <InfiniteScroll />
+        <SafeAreaView style={{ borderWidth: 0, flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+          <Loading />
         </SafeAreaView>
       </>
     );
