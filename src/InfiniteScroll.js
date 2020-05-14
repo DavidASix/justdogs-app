@@ -34,29 +34,30 @@ class InfiniteScroll extends Component {
   }
 
   async componentDidMount() {
-      AdMobInterstitial.setAdUnitID('ca-app-pub-7620983984875887/2283824628');
-      AdMobInterstitial.setTestDevices([AdMobInterstitial.simulatorId]);
-      AdMobInterstitial.requestAd()
-        .then(() => console.log('ad loaded'))
-        .catch(error => console.log(error));
-
       try {
+        try {
+          // Load intersitial ads
+          AdMobInterstitial.setAdUnitID('ca-app-pub-7620983984875887/2283824628');
+          AdMobInterstitial.setTestDevices([AdMobInterstitial.simulatorId]);
+          await AdMobInterstitial.requestAd();
+        } catch {
+          // Unable to load ad, no matter. Ad will not show;
+        }
         // Get initial images to render
         let newImage = await this.getNewUrl();
         let newImage1 = await this.getNewUrl();
         let newImage2 = await this.getNewUrl();
         let newImage3 = await this.getNewUrl();
         this.setState({ images: [...this.state.images, newImage, newImage1, newImage2, newImage3] });
-
-      } catch (err) {
-        console.log('err ', err)
+      } catch {
+        // Unable to get images from server, user will not be able to scroll as no images in list.
       } finally {
         this.setState({ loading: false, showAds: this.props.showAds });
       }
   }
 
   componentDidUpdate(prevProps) {
-    console.log('Show ads prop changed: ', prevProps.showAds !== this.props.showAds, ' this.props.showAds = ', this.props.showAds);
+    //console.log('Show ads prop changed: ', prevProps.showAds !== this.props.showAds, ' this.props.showAds = ', this.props.showAds);
     if (prevProps.showAds !== this.props.showAds) this.setState({ showAds: this.props.showAds });
   }
 
@@ -68,34 +69,13 @@ class InfiniteScroll extends Component {
   }
 
   onPressRemoveAds = async () => {
-    console.log('remove ads');
     try {
       await RNIap.requestPurchase('com.dave6.www.stroller.justdogs.noads', false);
     } catch (err) {
-      console.log('removeAds error: ', err);
+      //console.log('removeAds error: ', err);
+      // Unable to complete purchase, should be handled with an alert
     }
   }
-/*
-[
-  {
-    "currency": "CAD",
-    "description": "This will provide the developer with beer money for their next outing wtb's",
-    "freeTrialPeriodAndroid": "",
-    "iconUrl": "",
-    "introductoryPrice": "",
-    "introductoryPriceCyclesAndroid": "",
-    "introductoryPricePeriodAndroid": "",
-    "localizedPrice": "$2.99",
-    "originalJson": "{\"skuDetailsToken\":\"AEuhp4LuCpZvXJicDBmbhV3k7NmhiSvyUqh6CxyNMdAR767A4PSXynqTuaepLx16H3YX\",\"productId\":\"com.dave6.www.stroller.justdogs.beer\",\"type\":\"inapp\",\"price\":\"$2.99\",\"price_amount_micros\":2990000,\"price_currency_code\":\"CAD\",\"title\":\"Buy the developer a beer (Just Dogs)\",\"description\":\"This will provide the developer with beer money for their next outing wtb's\"}",
-    "originalPrice": "2.99",
-    "price": "2.99",
-    "productId": "com.dave6.www.stroller.justdogs.beer",
-    "subscriptionPeriodAndroid": "",
-    "title": "Buy the developer a beer (Just Dogs)",
-    "type": "inapp"
-  }
-]
-*/
   async handleViewChange(info) {
     let { maxViewed, images, currentImageDisplaying } = this.state;
     // Header screen is not counted as an indexed item, so swiping from header to first dog is 0 -> 0 :
@@ -118,8 +98,9 @@ class InfiniteScroll extends Component {
       if (info.changed[0].index % 19 === 0 && this.state.showAds) {
         try {
           await AdMobInterstitial.requestAd();
-        } catch (err) {
-          console.log('Error getting ad', err);
+        } catch {
+          //console.log('Error getting ad', err);
+          // Unable to get add from server, showAd will fail and nott display
         } finally {
           AdMobInterstitial.showAd();
         }
@@ -158,7 +139,6 @@ class InfiniteScroll extends Component {
               adSize="mediumRectangle"
               adUnitID='ca-app-pub-7620983984875887/1512888187'
               testDevices={[AdMobBanner.simulatorId]}
-              onDidFailToReceiveAdWithError={() => console.log('no5banner')}
             />
           </View>
 
@@ -185,7 +165,6 @@ class InfiniteScroll extends Component {
             adSize='banner'
             adUnitID='ca-app-pub-7620983984875887/2411144689'
             testDevices={[AdMobBanner.simulatorId]}
-            onDidFailToReceiveAdWithError={() => console.log('no ad')}
           />
         </View>
       );
@@ -195,14 +174,25 @@ class InfiniteScroll extends Component {
   renderNoAdsButton() {
     if (this.state.showAds) {
       return (
-        <TouchableOpacity
-          style={styles.button}
-          onPress={this.onPressRemoveAds}>
-          <Image
-            style={{ width: '85%', height: '85%' }}
-            source={require('./images/noads.png')}
-            />
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={this.onPressRemoveAds}>
+            <Image
+              style={{ width: '85%', height: '85%' }}
+              source={require('./images/noads.png')}
+              />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={this.props.restorePuchase}>
+            <Image
+              style={{ width: '80%', height: '80%' }}
+              source={require('./images/restorePurchase.png')}
+              />
+          </TouchableOpacity>
+        </>
       );
     }
   }
@@ -245,7 +235,7 @@ class InfiniteScroll extends Component {
                 onPress={this.onPressShare}>
                 <Image
                   style={{ width: '70%', height: '70%' }}
-                  source={require('./images/share3.png')}
+                  source={require('./images/share.png')}
                   />
               </TouchableOpacity>
               <TouchableOpacity

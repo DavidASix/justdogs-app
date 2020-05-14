@@ -25,9 +25,12 @@ class Loading extends React.Component {
       uid: false,
       loading: true,
       showAds: true,
+      showCollectEmailModal: false,
       showRestoreModal: false,
       emailText: '',
-      emailSubmitLoading: false
+      emailSubmitLoading: false,
+      codeText: '',
+      codeLoading: false
      };
     this.items = ['com.dave6.www.stroller.justdogs.noads', 'com.dave6.www.stroller.justdogs.beer'];
     this.purchaseListener = null;
@@ -97,12 +100,11 @@ purchaseUpdatedListener
       });
 
       let noAds = await axios.post(`${c.urls.dave}verifyPurchase`, { uid: data.uid, productId: this.items[0], webkey: c.webkey });
-      let showRestoreModal = noAds.data ?  !Boolean(data.email) : false;
       console.log('Bools, noads, email, both', { noads: noAds.data, email: data.email, both: !Boolean(noAds.data && data.email) });
       this.setState({
         uid: data.uid,
         showAds: !noAds.data,
-        showRestoreModal: noAds.data ? !Boolean(data.email) : false
+        showCollectEmailModal: noAds.data ? !Boolean(data.email) : false
       });
 
       // Set up IAP listener for purchases
@@ -135,7 +137,7 @@ purchaseUpdatedListener
           await axios.post(`${c.urls.dave}storeReceipt`, body);
           // If no ads was purchased, stop showing ads. This will update the prop which changes the state in InfiniteScroll via componentDidUpdate
           // show modal to collect restore information
-          this.setState({ showRestoreModal: true, showAds: purchase.productId !== this.items[0] })
+          this.setState({ showCollectEmailModal: true, showAds: purchase.productId !== this.items[0] })
           // Tell the store that you have delivered what has been paid for, failure to do this will result in the purchase being refunded
           RNIap.acknowledgePurchaseAndroid(purchase.purchaseToken);
           RNIap.finishTransaction(purchase, false);
@@ -165,7 +167,7 @@ purchaseUpdatedListener
   }
 
 
-  onPressSubmitEmail = async () => {
+  onPressSubmitEmailCollection = async () => {
     let email = String(this.state.emailText)
     try {
       this.setState({ emailSubmitLoading: true });
@@ -184,7 +186,7 @@ purchaseUpdatedListener
           uid = data.uid;
         }
         await axios.post(`${c.urls.dave}storeEmail`, { webkey: c.webkey, uid, email })
-        this.setState({ emailSubmitLoading: false, showRestoreModal: false });
+        this.setState({ emailSubmitLoading: false, showCollectEmailModal: false });
       } catch (err) {
         console.log('ServerError: ', err)
         throw { title: 'Server Error', body: 'Try again later' };
@@ -197,10 +199,25 @@ purchaseUpdatedListener
     } finally {
     }
   }
-  onDismissModalAttempt = () => {
-    Alert.alert(
-      'Email is required',
-      'An email is required to ensure we can restore your purchase');
+
+  onPressRestoreButton = () => {
+    let email = String(this.state.emailText)
+    let code = String(this.state.code)
+    try {
+      if (!this.state.code) {
+        // If user has not entered a code yet, send an email
+        this.setState({ emailSubmitLoading: true });
+        if (!email.match(c.regex.email)) throw { title: 'Invalid Email', body: 'Please enter a valid email' };
+      } else {
+        this.setState({ codeLoading: true });
+        // validate code
+      }
+    } catch (err) {
+      console.log('error on onPressRestoreButton: ', err);
+    } finally {
+      this.setState({ codeLoading: false, emailSubmitLoading: false });
+    }
+
   }
 
   renderLoading() {
@@ -210,23 +227,23 @@ purchaseUpdatedListener
           <ActivityIndicator size='large' color={c.colors.accent} style={{ position: 'absolute', bottom: 10 }} />
         </>
       );
-      return <InfiniteScroll showAds={this.state.showAds} />
+      return <InfiniteScroll showAds={this.state.showAds} restorePuchase={() => this.setState({ showRestoreModal: true })}/>
   }
 
-  renderEmailLoading() {
-    if (this.state.emailSubmitLoading) return <ActivityIndicator size='small' color={c.colors.accent} />;
+  renderTextInputLoading(loading) {
+    if (loading) return <ActivityIndicator size='small' color={c.colors.accent} />;
     return <Image style={{ width: 20, height: 20 }} source={require('./images/paw.png')} />
   }
 
-  render() {
+  renderModals() {
     return (
       <>
         <Modal
-          visible={this.state.showRestoreModal}
+          visible={this.state.showCollectEmailModal}
           animationType='slide'
           hardwareAccelerated
-          onDismiss={this.onDismissModalAttempt}
-          onRequestClose={this.onDismissModalAttempt}
+          onDismiss={() => Alert.alert('Email is required', 'An email is required to ensure we can restore your purchase')}
+          onRequestClose={() => Alert.alert('Email is required', 'An email is required to ensure we can restore your purchase')}
           transparent>
           <View style={styles.modalStyle}>
             <View style={{ borderBottomWidth: 1, borderColor: '#d6d6d6', paddingBottom: 10 }}>
@@ -252,7 +269,7 @@ purchaseUpdatedListener
               </View>
               <View style={styles.textInput}>
                 <View style={{  borderBottomWidth: 1, borderColor: c.colors.accent, width: 30, justifyContent: 'center', alignItems: 'center' }}>
-                  {this.renderEmailLoading()}
+                  {this.renderTextInputLoading(this.state.emailSubmitLoading)}
                 </View>
                 <TextInput
                   style={styles.textInput}
@@ -265,8 +282,8 @@ purchaseUpdatedListener
                   style={{ borderBottomWidth: 1, borderColor: c.colors.accent, flex: 1 }} />
               </View>
               <TouchableOpacity
-                onPress={this.onPressSubmitEmail}
-                style={[styles.textInput, { width: '50%' }]}>
+                onPress={this.onPressSubmitEmailCollection}
+                style={[styles.textInput, { width: '50%', justifyContent: 'center' }]}>
                 <Text style={{ textAlign: 'center' }}>
                   Submit
                 </Text>
@@ -280,6 +297,82 @@ purchaseUpdatedListener
         </Modal>
 
 
+        <Modal
+          visible={this.state.showRestoreModal}
+          animationType='slide'
+          hardwareAccelerated
+          onDismiss={() => this.setState({ showRestoreModal: false })}
+          onRequestClose={() => this.setState({ showRestoreModal: false })}
+          transparent>
+          <View style={styles.modalStyle}>
+            <View style={{ borderBottomWidth: 1, borderColor: '#d6d6d6', paddingBottom: 10 }}>
+              <Text style={{ fontFamily: 'blenda', fontSize: 36 }}>
+                Restore Purchase
+              </Text>
+              <Text style={{ fontSize: 12, textAlign: 'center' }}>
+                Enter your email to restore your purchase
+              </Text>
+            </View>
+
+            <View style={{ width: '100%', justif: 'center', alignItems: 'center' }}>
+              <View style={{ margin: 5 }}>
+                <Text style={{ fontSize: 14, margin: 5 }}>
+                  Enter your recovery email and press submit to receive a code.
+                </Text>
+                <Text style={{ fontSize: 14, margin: 5 }}>
+                  When you receive the code enter it below and press Restore Purchase.
+                </Text>
+              </View>
+              <View style={styles.textInput}>
+                <View style={{ borderBottomWidth: 1, borderColor: c.colors.accent, width: 30, justifyContent: 'center', alignItems: 'center' }}>
+                  {this.renderTextInputLoading(this.state.emailSubmitLoading)}
+                </View>
+                <TextInput
+                  style={styles.textInput}
+                  onChangeText={text => this.setState({ emailText: text })}
+                  value={this.state.emailText}
+                  placeholder='youremail@gmail.com'
+                  autoCapitalize='none'
+                  autoCompleteType='email'
+                  keyboardType='email-address'
+                  style={{ borderBottomWidth: 1, borderColor: c.colors.accent, flex: 1 }} />
+              </View>
+              <View style={styles.textInput}>
+                <View style={{ borderBottomWidth: 1, borderColor: c.colors.accent, width: 30, justifyContent: 'center', alignItems: 'center' }}>
+                  {this.renderTextInputLoading(this.state.codeLoading)}
+                </View>
+                <TextInput
+                  style={styles.textInput}
+                  onChangeText={text => this.setState({ codeText: text })}
+                  value={this.state.codeText}
+                  placeholder='Restore Code'
+                  autoCapitalize='none'
+                  autoCompleteType='off'
+                  keyboardType='number-pad'
+                  style={{ borderBottomWidth: 1, borderColor: c.colors.accent, flex: 1 }} />
+              </View>
+              <TouchableOpacity
+                onPress={this.onPressRestoreButton}
+                style={[styles.textInput, { width: '50%', justifyContent: 'center' }]}>
+                <Text style={{ textAlign: 'center' }}>
+                  {this.state.codeText ? 'Restore Purchase' : 'Submit Email'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ height: 150, width: 200, alignSelf: 'flex-end' }}>
+              <LottieView source={require('./images/doggieTrot.json')} autoPlay loop />
+            </View>
+          </View>
+        </Modal>
+      </>
+    )
+  }
+
+  render() {
+    return (
+      <>
+        {this.renderModals()}
         {this.renderLoading()}
       </>
     );
