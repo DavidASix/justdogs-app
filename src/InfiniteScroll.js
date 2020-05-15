@@ -205,6 +205,7 @@ class InfiniteScroll extends Component {
           <Image
             source={require('./images/logo.png')}
             style={{ height: 200, width: 200 }} />
+            <ActivityIndicator size='large' color='red' style={{ position: 'absolute', bottom: 10 }} />
         </View>
       );
     }

@@ -200,20 +200,41 @@ purchaseUpdatedListener
     }
   }
 
-  onPressRestoreButton = () => {
+  onPressRestoreButton = async () => {
     let email = String(this.state.emailText)
-    let code = String(this.state.code)
+    let code = String(this.state.codeText)
+    console.log(code);
     try {
-      if (!this.state.code) {
+      if (!code) {
         // If user has not entered a code yet, send an email
         this.setState({ emailSubmitLoading: true });
         if (!email.match(c.regex.email)) throw { title: 'Invalid Email', body: 'Please enter a valid email' };
+        try {
+          await axios.post(`${c.urls.dave}requestRestoreCode`, { webkey: c.webkey, email });
+          Alert.alert('Email Sent!', 'Please check your spam folder', [{ text: 'OK', onPress: () => {} }]);
+        } catch {
+          throw { title: 'Invalid Email', body: 'Please enter a valid email' };
+        }
       } else {
         this.setState({ codeLoading: true });
-        // validate code
+        // Check restore code
+        // If code is valid, this request will return the associated user object
+        try {
+          let user = await axios.post(`${c.urls.dave}checkRestoreCode`, { webkey: c.webkey, code });
+          await AsyncStorage.setItem('@uid', user.data.uid);
+          this.setState({ showAds: false, uid: user.data.uid });
+          Alert.alert(
+            'Purchase Restored',
+            'Enjoy your Ad Free Dogs!',
+            [{ text: 'OK', onPress: () => this.setState({ showRestoreModal: false }) }]);
+        } catch (err) {
+          console.log('Code Error: ', err);
+          throw { title: 'Error restoring purchase', body: 'Please retry' };
+        }
       }
     } catch (err) {
       console.log('error on onPressRestoreButton: ', err);
+      Alert.alert(err.title, err.body);
     } finally {
       this.setState({ codeLoading: false, emailSubmitLoading: false });
     }
