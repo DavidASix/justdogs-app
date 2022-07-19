@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Share
 } from 'react-native';
-import LottieView from 'lottie-react-native';
 import { AdMobBanner, AdMobInterstitial } from 'react-native-admob'
 import * as RNIap from 'react-native-iap';
 import axios from 'axios';
@@ -37,7 +36,7 @@ class InfiniteScroll extends Component {
       try {
         try {
           // Load intersitial ads
-          AdMobInterstitial.setAdUnitID('ca-app-pub-7620983984875887/2283824628');
+          AdMobInterstitial.setAdUnitID(c.admob.inter);
           AdMobInterstitial.setTestDevices([AdMobInterstitial.simulatorId]);
           await AdMobInterstitial.requestAd();
         } catch {
@@ -137,7 +136,7 @@ class InfiniteScroll extends Component {
               style={{ height: '100%', width: '100%', position: 'absolute' }} />
             <AdMobBanner
               adSize="mediumRectangle"
-              adUnitID='ca-app-pub-7620983984875887/1512888187'
+              adUnitID={c.admob.mRec}
               testDevices={[AdMobBanner.simulatorId]}
             />
           </View>
@@ -163,7 +162,7 @@ class InfiniteScroll extends Component {
             style={{ height: '100%', width: '100%', position: 'absolute' }} />
           <AdMobBanner
             adSize='banner'
-            adUnitID='ca-app-pub-7620983984875887/2411144689'
+            adUnitID={c.admob.banner}
             testDevices={[AdMobBanner.simulatorId]}
           />
         </View>

@@ -3,3 +3,4 @@ export * from './quotes';
 export * from './urls';
 export * from './regex';
 export * from './p';
+export * from './admob';

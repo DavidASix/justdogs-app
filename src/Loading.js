@@ -66,10 +66,8 @@ purchaseUpdatedListener
   async componentDidMount() {
     // Init IAP and get purchasable items
     try {
-      const result = await RNIap.initConnection();
-      const purchases = await RNIap.getAvailablePurchases();
+      await RNIap.initConnection();
       const products = await RNIap.getProducts(this.items);
-      const consume = await RNIap.consumeAllItemsAndroid();
       this.setState({ products });
     } catch (err) {
       console.log('err in iap init: ', err);
@@ -83,7 +81,7 @@ purchaseUpdatedListener
       let { data } = await axios.post(`${c.urls.dave}checkUser`, { webkey: c.webkey, package: c.pn, uid });
       // Store the UID returned from the server
       await AsyncStorage.setItem('@uid', data.uid);
-
+/*
       // setup push notifications
       PushNotification.configure({
         onRegister: async ({ token }) => {
@@ -150,7 +148,7 @@ purchaseUpdatedListener
       this.purchaseErrorListener = RNIap.purchaseErrorListener((error) => {
         console.log('purchaseErrorListener ', error);
       });
-
+*/
     } catch (err) {
       console.log(' Comp mount Err: ,', err);
     } finally {
