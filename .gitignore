@@ -62,4 +62,4 @@ buck-out/
 #privatefiles
 p.js
 urls.js
-constants/admob.js
+admob.js
