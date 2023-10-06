@@ -1,4 +1,4 @@
-package com.justdogs;
+package com.dave6.stroller.justdogs;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;

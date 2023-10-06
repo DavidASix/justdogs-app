@@ -1,4 +1,4 @@
-package com.justdogs;
+package com.dave6.stroller.justdogs;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
