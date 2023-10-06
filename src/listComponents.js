@@ -22,7 +22,11 @@ export class ImageItem extends PureComponent {
 
           <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
             <View style={{ height: 150, width: '100%' }}>
-              <LottieView source={require('./images/doggieTrot.json')} autoPlay loop />
+              <LottieView 
+                source={require('./images/doggieTrot.json')} 
+                style={{ width: '100%', height: '100%'}}
+                autoPlay 
+                loop />
             </View>
             <Text style={{ color: 'white', fontSize: 14, margin: 10, textAlign: 'center' }}>
               {
@@ -66,7 +70,11 @@ export class ListHeader extends PureComponent {
           </View>
 
           <View style={{ height: 150, width: '100%' }}>
-            <LottieView source={require('./images/doggieTrot.json')} autoPlay loop />
+            <LottieView 
+              source={require('./images/doggieTrot.json')} 
+              style={{ width: '100%', height: '100%'}}
+              autoPlay 
+              loop />
           </View>
         </View>
 

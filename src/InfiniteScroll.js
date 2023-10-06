@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Share
 } from 'react-native';
-import { AdMobBanner, AdMobInterstitial } from 'react-native-admob'
 import * as RNIap from 'react-native-iap';
 import axios from 'axios';
 
@@ -34,6 +33,7 @@ class InfiniteScroll extends Component {
 
   async componentDidMount() {
       try {
+        /*
         try {
           // Load intersitial ads
           AdMobInterstitial.setAdUnitID(c.admob.inter);
@@ -42,6 +42,7 @@ class InfiniteScroll extends Component {
         } catch {
           // Unable to load ad, no matter. Ad will not show;
         }
+        */
         // Get initial images to render
         let newImage = await this.getNewUrl();
         let newImage1 = await this.getNewUrl();
@@ -69,7 +70,7 @@ class InfiniteScroll extends Component {
 
   onPressRemoveAds = async () => {
     try {
-      await RNIap.requestPurchase('com.dave6.www.stroller.justdogs.noads', false);
+      //await RNIap.requestPurchase('com.dave6.www.stroller.justdogs.noads', false);
     } catch (err) {
       //console.log('removeAds error: ', err);
       // Unable to complete purchase, should be handled with an alert
@@ -95,13 +96,14 @@ class InfiniteScroll extends Component {
 
       // Every 25 images show an interstitial ad
       if (info.changed[0].index % 19 === 0 && this.state.showAds) {
+        return;
         try {
-          await AdMobInterstitial.requestAd();
+          //await AdMobInterstitial.requestAd();
         } catch {
           //console.log('Error getting ad', err);
           // Unable to get add from server, showAd will fail and nott display
         } finally {
-          AdMobInterstitial.showAd();
+          //AdMobInterstitial.showAd();
         }
       }
 
@@ -134,11 +136,11 @@ class InfiniteScroll extends Component {
               source={require('./images/logo.png')}
               resizeMode='contain'
               style={{ height: '100%', width: '100%', position: 'absolute' }} />
-            <AdMobBanner
-              adSize="mediumRectangle"
-              adUnitID={c.admob.mRec}
-              testDevices={[AdMobBanner.simulatorId]}
-            />
+            {/*<AdMobBanner
+                adSize="mediumRectangle"
+                adUnitID={c.admob.mRec}
+                testDevices={[AdMobBanner.simulatorId]}
+                />*/}
           </View>
 
           <View style={styles.textBox}>
@@ -160,11 +162,11 @@ class InfiniteScroll extends Component {
             source={require('./images/logo.png')}
             resizeMode='contain'
             style={{ height: '100%', width: '100%', position: 'absolute' }} />
-          <AdMobBanner
+          {/*<AdMobBanner
             adSize='banner'
             adUnitID={c.admob.banner}
             testDevices={[AdMobBanner.simulatorId]}
-          />
+            />*/}
         </View>
       );
     }
