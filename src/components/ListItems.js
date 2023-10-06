@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { View, Image } from 'react-native';
 import LottieView from 'lottie-react-native';
-import * as c from './constants';
+import * as c from '../constants';
 import {Title, Span} from './components/Common';
 
 //Return a semi an darker RGB color from a seed value. Accepts darker as int between 0 and 255 to dim the color
@@ -24,7 +24,7 @@ export class ImageItem extends PureComponent {
           <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
             <View style={{ height: 150, width: '100%' }}>
               <LottieView 
-                source={require('./images/doggieTrot.json')} 
+                source={require('../images/doggieTrot.json')} 
                 style={{ width: '100%', height: '100%'}}
                 autoPlay 
                 loop />
@@ -72,7 +72,7 @@ export class ListHeader extends PureComponent {
 
           <View style={{ height: 150, width: '100%' }}>
             <LottieView 
-              source={require('./images/doggieTrot.json')} 
+              source={require('../images/doggieTrot.json')} 
               style={{ width: '100%', height: '100%'}}
               autoPlay 
               loop />

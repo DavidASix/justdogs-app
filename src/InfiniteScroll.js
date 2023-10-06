@@ -11,7 +11,7 @@ import * as RNIap from 'react-native-iap';
 import axios from 'axios';
 
 import * as c from './constants';
-import { ImageItem, ListHeader } from './listComponents';
+import { ImageItem, ListHeader } from './components/ListItems';
 import {Span} from './components/Common'
 class InfiniteScroll extends Component {
   constructor(props) {
