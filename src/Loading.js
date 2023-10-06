@@ -6,6 +6,7 @@ import {
 import LottieView from 'lottie-react-native';
 import * as RNIap from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import firestore from '@react-native-firebase/firestore';
 import InfiniteScroll from './InfiniteScroll';
 import axios from 'axios';
 import * as c from './constants';
@@ -38,21 +39,30 @@ class Loading extends React.Component {
     } catch (err) {
       console.log('err in iap init: ', err);
     }
-    // TODO: Firebase Auth implementation
+    */
     try {
       // check if a user has logged in before
       let uid = await AsyncStorage.getItem('@uid')
       // check if stored UID is on server, if not send back a new one
-      let { data } = await axios.post(`${c.urls.dave}checkUser`, { webkey: c.webkey, package: c.pn, uid });
-      // Store the UID returned from the server
-      await AsyncStorage.setItem('@uid', data.uid);
+      console.log('Try entered', uid)
+      const usersCollection = firestore().collection('users');
+      const query = usersCollection.where('uid', '==', uid).limit(1);
+      const snapshot = await query.get();
+      if (!snapshot.empty) {
+        console.log('Found user')
+        const user = snapshot.docs[0].data();
+        uid = user.uid
+      } else {
+        uid = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+        console.log('Creating user', uid)
+        await usersCollection.add({uid});
+      }
+      await AsyncStorage.setItem('@uid', uid);
     } catch (err) {
       console.log(' Comp mount Err: ,', err);
     } finally {
       this.setState({ loading: false });
     }
-    */
-   this.setState({ loading: false });
   }
 
 
