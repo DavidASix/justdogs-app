@@ -12,7 +12,7 @@ import axios from 'axios';
 
 import * as c from './constants';
 import { ImageItem, ListHeader } from './listComponents';
-import {Span} from './components/'
+import {Span} from './components/Common'
 class InfiniteScroll extends Component {
   constructor(props) {
     super(props)

@@ -13,7 +13,7 @@ import * as RNIap from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as c from '../constants';
-import {Title, Span} from './'
+import {Title, Span} from './Common'
 
 
 function RestoreModal(props) {

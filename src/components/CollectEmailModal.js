@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import LottieView from 'lottie-react-native';
 import * as c from '../constants';
-import {Title, Span} from './'
+import {Title, Span} from './Common'
 
 
 function RestoreModal(props) {
