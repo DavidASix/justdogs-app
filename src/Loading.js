@@ -218,7 +218,11 @@ class Loading extends React.Component {
             </View>
 
             <View style={{ height: 150, width: 200, alignSelf: 'flex-end' }}>
-              <LottieView source={require('./images/doggieTrot.json')} autoPlay loop />
+              <LottieView 
+                source={require('./images/doggieTrot.json')} 
+                style={{ width: '100%', height: '100%'}}
+                autoPlay 
+                loop />
             </View>
           </View>
         </Modal>
@@ -286,7 +290,11 @@ class Loading extends React.Component {
             </View>
 
             <View style={{ height: 150, width: 200, alignSelf: 'flex-end' }}>
-              <LottieView source={require('./images/doggieTrot.json')} autoPlay loop />
+              <LottieView 
+                source={require('./images/doggieTrot.json')} 
+                style={{ width: '100%', height: '100%'}}
+                autoPlay 
+                loop />
             </View>
           </View>
         </Modal>
