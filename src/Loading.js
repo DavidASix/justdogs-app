@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import InfiniteScroll from './InfiniteScroll';
 import axios from 'axios';
 import * as c from './constants';
+import {Title, Span} from './components/'
 
 class Loading extends React.Component {
   constructor(props) {
@@ -174,25 +175,25 @@ class Loading extends React.Component {
           transparent>
           <View style={styles.modalStyle}>
             <View style={{ borderBottomWidth: 1, borderColor: '#d6d6d6', paddingBottom: 10 }}>
-              <Text style={{ fontFamily: 'blenda', fontSize: 36 }}>
+              <Title $dark={true}>
                 Thank you!
-              </Text>
-              <Text style={{ fontSize: 12, textAlign: 'center' }}>
+              </Title>
+              <Span $dark={true} style={{ fontSize: 12, textAlign: 'center' }}>
                 Your purchase helps support an independent developer
-              </Text>
+              </Span>
             </View>
 
             <View style={{ width: '100%', justif: 'center', alignItems: 'center' }}>
               <View style={{ margin: 5 }}>
-                <Text style={{ fontSize: 14, margin: 5 }}>
+                <Span $dark={true} style={{ fontSize: 14, margin: 5 }}>
                   As Just Dogs does not use accounts to track users if you switch devices or reset your phone your purchase may be lost.
-                </Text>
-                <Text style={{ fontSize: 14, margin: 5 }}>
+                </Span>
+                <Span $dark={true} style={{ fontSize: 14, margin: 5 }}>
                   To ensure we are able to restore your purchase please enter your email below.
-                </Text>
-                <Text style={{ fontSize: 14, margin: 5 }}>
-                  Just Dogs will <Text style={{ fontSize: 14, color: 'red' }}>never</Text> send you spam or sell your email.
-                </Text>
+                </Span>
+                <Span $dark={true} style={{ fontSize: 14, margin: 5 }}>
+                  Just Dogs will <Span style={{ fontSize: 14, color: 'red' }}>never</Span> send you spam or sell your email.
+                </Span>
               </View>
               <View style={styles.textInput}>
                 <View style={{  borderBottomWidth: 1, borderColor: c.colors.accent, width: 30, justifyContent: 'center', alignItems: 'center' }}>
@@ -210,9 +211,9 @@ class Loading extends React.Component {
               <TouchableOpacity
                 onPress={this.onPressSubmitEmailCollection}
                 style={[styles.textInput, { width: '50%', justifyContent: 'center' }]}>
-                <Text style={{ textAlign: 'center' }}>
+                <Span $dark={true} style={{ textAlign: 'center' }}>
                   Submit
-                </Text>
+                </Span>
               </TouchableOpacity>
             </View>
 
@@ -232,22 +233,22 @@ class Loading extends React.Component {
           transparent>
           <View style={styles.modalStyle}>
             <View style={{ borderBottomWidth: 1, borderColor: '#d6d6d6', paddingBottom: 10 }}>
-              <Text style={{ fontFamily: 'blenda', fontSize: 36 }}>
+              <Title $dark={true}>
                 Restore Purchase
-              </Text>
-              <Text style={{ fontSize: 12, textAlign: 'center' }}>
+              </Title>
+              <Span $dark={true} style={{ fontSize: 12, textAlign: 'center' }}>
                 Enter your email to restore your purchase
-              </Text>
+              </Span>
             </View>
 
             <View style={{ width: '100%', justif: 'center', alignItems: 'center' }}>
               <View style={{ margin: 5 }}>
-                <Text style={{ fontSize: 14, margin: 5 }}>
+                <Span $dark={true} style={{ fontSize: 14, margin: 5 }}>
                   Enter your recovery email and press submit to receive a code.
-                </Text>
-                <Text style={{ fontSize: 14, margin: 5 }}>
+                </Span>
+                <Span $dark={true} style={{ fontSize: 14, margin: 5 }}>
                   When you receive the code enter it below and press Restore Purchase.
-                </Text>
+                </Span>
               </View>
               <View style={styles.textInput}>
                 <View style={{ borderBottomWidth: 1, borderColor: c.colors.accent, width: 30, justifyContent: 'center', alignItems: 'center' }}>
@@ -278,9 +279,9 @@ class Loading extends React.Component {
               <TouchableOpacity
                 onPress={this.onPressRestoreButton}
                 style={[styles.textInput, { width: '50%', justifyContent: 'center' }]}>
-                <Text style={{ textAlign: 'center' }}>
+                <Span $dark={true} style={{ textAlign: 'center' }}>
                   {this.state.codeText ? 'Restore Purchase' : 'Submit Email'}
-                </Text>
+                </Span>
               </TouchableOpacity>
             </View>
 
@@ -320,6 +321,7 @@ const styles = {
     borderTopRightRadius: 30
   },
   textInput: {
+    fontFamily: 'fenix',
     flexDirection: 'row',
     borderWidth: 1,
     borderColor: '#d6d6d6',

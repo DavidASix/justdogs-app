@@ -1,7 +1,6 @@
 import React, { Component, useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   Image,
   FlatList,
   ActivityIndicator,
@@ -13,7 +12,7 @@ import axios from 'axios';
 
 import * as c from './constants';
 import { ImageItem, ListHeader } from './listComponents';
-
+import {Span} from './components/'
 class InfiniteScroll extends Component {
   constructor(props) {
     super(props)
@@ -144,9 +143,9 @@ class InfiniteScroll extends Component {
           </View>
 
           <View style={styles.textBox}>
-            <Text style={{ color: 'white', fontSize: 18 }}>
+            <Span>
               Viewing ads helps support individual app developers. Thank you!
-            </Text>
+            </Span>
           </View>
         </View>
       );

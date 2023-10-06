@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Image } from 'react-native';
 import LottieView from 'lottie-react-native';
 import * as c from './constants';
+import {Title, Span} from './components/';
 
 //Return a semi an darker RGB color from a seed value. Accepts darker as int between 0 and 255 to dim the color
 // Darker is used to ensure that light text is readable against the BG
@@ -28,13 +29,13 @@ export class ImageItem extends PureComponent {
                 autoPlay 
                 loop />
             </View>
-            <Text style={{ color: 'white', fontSize: 14, margin: 10, textAlign: 'center' }}>
+            <Span style={{textAlign: 'center'}}>
               {
                 image.url.slice(-3) === 'gif' ? 'This GIF will take longer to load, but it\'s worth it!' :
                 image.size > 2200000 ? 'This is a larger image, so it may take longer to load. Probably pretty cute though.' :
                 ''
               }
-            </Text>
+            </Span>
           </View>
           <Image
             style={{ height: '100%', width: '100%' }}
@@ -42,9 +43,9 @@ export class ImageItem extends PureComponent {
             resizeMode={zoom ? 'cover' : 'contain'}
           />
           <View style={styles.textBox}>
-            <Text style={{ color: 'white', fontSize: 18 }}>
+            <Span>
               {c.quotes.dog[Math.floor(quoteIndex)]}
-            </Text>
+            </Span>
           </View>
 
         </View>
@@ -61,12 +62,12 @@ export class ListHeader extends PureComponent {
 
         <View style={{ justifyContent: 'center', alignItems: 'center', width: '90%', minHeight: 200, position: 'absolute' }}>
           <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: 'white' }}>
+            <Span>
               Welcome to
-            </Text>
-            <Text style={{ fontFamily: 'blenda', color: 'white', fontSize: 36, margin: 10, textAlign: 'center' }}>
+            </Span>
+            <Title>
               Just Dogs
-            </Text>
+            </Title>
           </View>
 
           <View style={{ height: 150, width: '100%' }}>
@@ -79,9 +80,9 @@ export class ListHeader extends PureComponent {
         </View>
 
         <View style={styles.textBox}>
-          <Text style={{ color: 'white', fontSize: 18 }}>
+          <Span>
             Swipe up to get started
-          </Text>
+          </Span>
         </View>
 
       </View>
