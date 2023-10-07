@@ -67,6 +67,7 @@ yarn-error.log
 
 #privatefiles
 p.js
+p.json
 urls.js
 admob.js
 
