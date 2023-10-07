@@ -138,7 +138,8 @@ class Loading extends React.Component {
 
         <RestoreModal 
           showRestoreModal={this.state.showRestoreModal} 
-          dissmissModal={() => this.setState({showRestoreModal: false})}/>
+          dissmissModal={() => this.setState({showRestoreModal: false})}
+          purchaseConfirmed={() => this.setState({showAds: false})} />
 
         {this.renderLoading()}
       </>

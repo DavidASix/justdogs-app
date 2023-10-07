@@ -11,14 +11,10 @@ import {
 import LottieView from 'lottie-react-native';
 import * as RNIap from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import base64 from 'react-native-base64'
 
 import axios from 'axios';
 import * as c from '../constants';
 import {Title, Span} from './Common'
-import restoreCodeEmail from './restoreCodeEmail';
-
-const keys = c.keys;
 
 function RestoreModal(props) {
     const { showRestoreModal, dissmissModal } = props;
@@ -27,45 +23,16 @@ function RestoreModal(props) {
     const [emailSubmitLoading, setEmailSubmitLoading] = useState(false);
     const [codeLoading, setCodeLoading] = useState(false);
     
-    sendRecoveryEmail = (email, code) => new Promise(async (resolve, reject) => {
-        const credentials = base64.encode(`api:${keys.mg_api}`)
-        const config = {
-                headers: {
-                'Authorization': `Basic ${credentials}`,
-                'Content-Type': 'multipart/form-data'
-            }
-        };
-        const content = {
-            from: `Just Dogs <JustDogs@${c.urls.mg_base}>`,
-            to: email,
-            subject: 'Just Dogs Recovery Code',
-            text: `Thank you for your support! Your Purchase Recovery Code is: ${code}`,
-            html: restoreCodeEmail(code)
-        }
-        try {
-            let res = await axios.post(`${c.urls.mg}/messages`, content, config)
-            return resolve();
-        } catch (err) {
-            return reject(err)
-        }
-    });
-
     onPressRestoreButton = async () => {
         let email = String(emailText)
         let code = String(codeText)
         try {
             if (!code) {
-                // TODO: move this flow into a firebase cloud function
-                //       The code should never live/ be generated locally
-                // Create a random 5 character code
-                code = [...Array(5)].map(() => Math.random().toString(36)[2]).join('').toUpperCase();
-                // If user has not entered a code yet, send an email
+                // If user has not entered a code yet, send them an email with a new code
                 setEmailSubmitLoading(true)
-                if (!email.match(c.regex.email)) throw { title: 'Invalid Email', body: 'Please enter a valid email' };
                 try {
-                    // Replace with proper req
-                    await sendRecoveryEmail(email, code)
-                    //await axios.post(`${c.urls.dave}requestRestoreCode`, { webkey: c.webkey, email });
+                    if (!email.match(c.regex.email)) throw { title: 'Invalid Email', body: 'Please enter a valid email' };
+                    await axios.post(c.urls.firebase.sendRestoreCode, { email });
                     Alert.alert('Email Sent!', 'Please check your spam folder', [{ text: 'OK', onPress: () => {} }]);
                 } catch(err) {
                     console.log(err);
@@ -73,14 +40,16 @@ function RestoreModal(props) {
                 }
             } else {
                 setCodeLoading(true)
-                // Check restore code
-                // If code is valid, this request will return the associated user object
                 try {
-                    // TODO: Replace this code with Firebase
-                    //let user = await axios.post(`${c.urls.dave}checkRestoreCode`, { webkey: c.webkey, code });
-                    //await AsyncStorage.setItem('@uid', user.data.uid);
-                    // Replace this with a prop callback to set the variables
-                    //this.setState({ showAds: false, uid: user.data.uid });
+                    // If code is valid, this request will return the associated user object
+                    let checkCode = await axios.post(c.urls.firebase.checkRestoreCode, { email, code });
+                    const user = checkCode.data?.user
+                    console.log({user})
+                    await AsyncStorage.setItem('@uid', user.uid);
+                    // Reset inputs and flag through a callback that ads are disabled
+                    setCodeText('');
+                    setEmailText('');
+                    props.purchaseConfirmed();
                     Alert.alert(
                         'Purchase Restored',
                         'Enjoy your Ad Free Dogs!',
@@ -154,8 +123,7 @@ function RestoreModal(props) {
                         value={codeText}
                         placeholder='Restore Code'
                         autoCapitalize='none'
-                        autoCompleteType='off'
-                        keyboardType='number-pad' />
+                        autoCompleteType='off' />
                     </View>
                     <TouchableOpacity
                         onPress={onPressRestoreButton}
