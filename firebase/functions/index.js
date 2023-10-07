@@ -131,3 +131,32 @@ exports.sendRestoreCode = onRequest(async (req, res) => {
       .json({success: false, message: 'Error sending email'});
   }
 });
+
+exports.checkRestoreCode = onRequest(async (req, res) => {
+  const {code, email} = req.body;
+	const inputCode = String(code || '').toUpperCase().replace(' ', '');
+  if (!inputCode || !email) {
+    return res.status(400).json({success: false, message: 'Insufficient Information'});
+  }
+
+  // Get the user reference
+  let user = null;
+  try {
+    user = await getUserByEmail(email);
+  } catch (err) {
+    return res
+      .status(404)
+      .json({success: false, message: 'Could not find user'});
+  }
+  const userData = user.data()
+  console.log({userData})
+  console.log({inputCode})
+  if (userData?.code === inputCode && userData?.codeValid) {
+    // TODO: Add in a check for when the recovery code was originally generated. Codes older than 1 hour should not be used.
+    // Code and user have been matched, purchase confirmed
+    await user.ref.update({ codeValid: false });
+    return res.status(200).json({success: true, message: 'Purchase Confirmed', user: user.data()});
+  } else {
+    return res.status(402).json({ success: false, message: 'Purchase could not be confirmed'});
+  }
+});
