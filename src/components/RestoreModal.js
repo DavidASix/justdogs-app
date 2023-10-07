@@ -11,10 +11,14 @@ import {
 import LottieView from 'lottie-react-native';
 import * as RNIap from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import base64 from 'react-native-base64'
+
 import axios from 'axios';
 import * as c from '../constants';
 import {Title, Span} from './Common'
+import restoreCodeEmail from './restoreCodeEmail';
 
+const keys = c.keys;
 
 function RestoreModal(props) {
     const { showRestoreModal, dissmissModal } = props;
@@ -22,21 +26,50 @@ function RestoreModal(props) {
     const [codeText, setCodeText] = useState('');
     const [emailSubmitLoading, setEmailSubmitLoading] = useState(false);
     const [codeLoading, setCodeLoading] = useState(false);
+    
+    sendRecoveryEmail = (email, code) => new Promise(async (resolve, reject) => {
+        const credentials = base64.encode(`api:${keys.mg_api}`)
+        const config = {
+                headers: {
+                'Authorization': `Basic ${credentials}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        };
+        const content = {
+            from: `Just Dogs <JustDogs@${c.urls.mg_base}>`,
+            to: email,
+            subject: 'Just Dogs Recovery Code',
+            text: `Thank you for your support! Your Purchase Recovery Code is: ${code}`,
+            html: restoreCodeEmail(code)
+        }
+        try {
+            let res = await axios.post(`${c.urls.mg}/messages`, content, config)
+            return resolve();
+        } catch (err) {
+            return reject(err)
+        }
+    });
 
     onPressRestoreButton = async () => {
         let email = String(emailText)
         let code = String(codeText)
         try {
             if (!code) {
+                // TODO: move this flow into a firebase cloud function
+                //       The code should never live/ be generated locally
+                // Create a random 5 character code
+                code = [...Array(5)].map(() => Math.random().toString(36)[2]).join('').toUpperCase();
                 // If user has not entered a code yet, send an email
                 setEmailSubmitLoading(true)
                 if (!email.match(c.regex.email)) throw { title: 'Invalid Email', body: 'Please enter a valid email' };
                 try {
                     // Replace with proper req
+                    await sendRecoveryEmail(email, code)
                     //await axios.post(`${c.urls.dave}requestRestoreCode`, { webkey: c.webkey, email });
                     Alert.alert('Email Sent!', 'Please check your spam folder', [{ text: 'OK', onPress: () => {} }]);
-                } catch {
-                    throw { title: 'Invalid Email', body: 'Please enter a valid email' };
+                } catch(err) {
+                    console.log(err);
+                    throw { title: 'Email not sent', body: 'There was a problem sending the email' };
                 }
             } else {
                 setCodeLoading(true)
