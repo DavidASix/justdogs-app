@@ -9,12 +9,30 @@ const firestore = admin.firestore();
 const p = require('./p.json')
 const restoreCodeEmail = require('./restoreCodeEmail')
 
-getUserRef = (uid) => new Promise(async (resolve, reject) => {
+getUserByUID = (uid) => new Promise(async (resolve, reject) => {
     // Returns a ref to the user document. Data obj can be accessed with .data();
     try {
       let user = null;
       const usersCollection = firestore.collection('users');
       const query = usersCollection.where('uid', '==', uid).limit(1);
+      const snapshot = await query.get();
+      if (!snapshot.empty) {
+        user = snapshot.docs[0];
+      } else {
+        throw new Error('User not found');
+      }
+      return resolve(user);
+    } catch (err) {
+      return reject(err);
+    }
+  });
+
+  getUserByEmail = (email) => new Promise(async (resolve, reject) => {
+    // Returns a ref to the user document. Data obj can be accessed with .data();
+    try {
+      let user = null;
+      const usersCollection = firestore.collection('users');
+      const query = usersCollection.where('email', '==', email).limit(1);
       const snapshot = await query.get();
       if (!snapshot.empty) {
         user = snapshot.docs[0];
@@ -35,7 +53,7 @@ exports.updateUserEmail = onRequest(async (req, res) => {
   // Returns a ref to the user document. Data obj can be accessed with .data();
   let user = null;
   try {
-      user = await getUserRef(uid);
+      user = await getUserByUID(uid);
   } catch (err) {
       res.status(404).json({success: false, message: 'Could not find user'});
   }
@@ -48,8 +66,8 @@ exports.updateUserEmail = onRequest(async (req, res) => {
 });
 
 exports.sendRestoreCode = onRequest(async (req, res) => {
-  const {uid} = req.body;
-  if (!uid) {
+  const {email} = req.body;
+  if (!email) {
       return res.status(400).json({success: false, message: 'Missing UID'});
   }
   // Create a random 5 character code
@@ -58,11 +76,17 @@ exports.sendRestoreCode = onRequest(async (req, res) => {
   // Get the user reference
   let user = null;
   try {
-    user = await getUserRef(uid);
+    user = await getUserByEmail(email);
   } catch (err) {
     return res.status(404).json({success: false, message: 'Could not find user'});
   }
-  
+
+  // Check if the user has purchased the product
+  if (!user.data().purchasedNoAds) {
+    await user.ref.update({codeValid: false });
+    return res.status(403).json({success: false, message: 'User has not purchased'})
+  }
+
   // Save the new code to the user
   try {
     await user.ref.update({code, codeValid: true});
@@ -85,7 +109,7 @@ exports.sendRestoreCode = onRequest(async (req, res) => {
       text: `Thank you for your support! Your Purchase Recovery Code is: ${code}`,
       html: restoreCodeEmail(code)
   }
-  
+
   // Email the user the new code
   try {
     await axios.post(`${p.urls.mg}/messages`, content, mg_config);
