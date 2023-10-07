@@ -42,24 +42,9 @@ class Loading extends React.Component {
     */
     try {
       // check if a user has logged in before
-      let uid = await AsyncStorage.getItem('@uid')
-      // check if stored UID is on server, if not send back a new one
-      console.log('Try entered', uid)
-      const usersCollection = firestore().collection('users');
-      const query = usersCollection.where('uid', '==', uid).limit(1);
-      const snapshot = await query.get();
-      if (!snapshot.empty) {
-        console.log('Found user')
-        const user = snapshot.docs[0].data();
-        uid = user.uid
-      } else {
-        uid = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
-        console.log('Creating user', uid)
-        await usersCollection.add({uid});
-      }
-      await AsyncStorage.setItem('@uid', uid);
+      let uid = await this.getUid();
     } catch (err) {
-      console.log(' Comp mount Err: ,', err);
+      console.log('Could not get UID')
     } finally {
       this.setState({ loading: false });
     }
@@ -75,6 +60,49 @@ class Loading extends React.Component {
     */
   }
 
+  getUserInformation = (uid) => new Promise(async (resolve, reject) => {
+    try {
+      let user = null;
+      const usersCollection = firestore().collection('users');
+      const query = usersCollection.where('uid', '==', uid).limit(1);
+      const snapshot = await query.get();
+      if (!snapshot.empty) {
+        user = snapshot.docs[0].data();
+      } else {
+        throw new Error('User not found');
+      }
+      return resolve(user);
+    } catch (err) {
+      return reject(err);
+    }
+  });
+
+  getUid = () => new Promise(async (resolve, reject) => {
+    try {
+      // check if a user has logged in before
+      let uid = await AsyncStorage.getItem('@uid')
+      // check if stored UID is on server, if not send back a new one
+      console.log('Try entered', uid)
+      try {
+        const user = await this.getUserInformation(uid);
+        uid = user.uid;
+      } catch (err) {
+        uid = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+        console.log('Creating user', uid)
+        try {
+          await usersCollection.add({uid});
+        } catch {
+          console.log('Could not store new users UID')
+        }
+      } finally {
+        if (uid) await AsyncStorage.setItem('@uid', uid);
+      }
+      return resolve(uid);
+    } catch (err) {
+      console.log('Either could not get or set async item.')
+      return reject(err);
+    }
+  })
 
   submitEmail = (email) => new Promise(async (resolve, reject) => {
     // This is a callback called by the emailCollection modal when the email is submitted
@@ -86,7 +114,7 @@ class Loading extends React.Component {
           uid = this.state.uid;
         } else {
           // TODO: Convert this to a firebase call, uncomment async store code
-          //let storedUid = await AsyncStorage.getItem('@uid')
+          let storedUid = await AsyncStorage.getItem('@uid')
           // check if stored UID is on server, if not send back a new one
           //let { data } = await axios.post(`${c.urls.dave}checkUser`, { webkey: c.webkey, package: c.pn, uid: storedUid });
           // Store the UID returned from the server
