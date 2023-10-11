@@ -47,7 +47,18 @@ class Loading extends React.Component {
             console.log('Error in purchase lisetner', err)
           }
       });
-      this.purchaseErrorSubscription = RNIap.purchaseErrorListener((error) => { console.warn('purchaseErrorListener', error); });
+      this.purchaseErrorSubscription = RNIap.purchaseErrorListener((error) => {
+        switch (error.code) {
+          case ('E_ALREADY_OWNED'): {
+            this.processNoAdsPurchase();
+            break;
+          }
+          default: {
+            console.log('purchaseErrorListener', error); 
+            break;
+          }
+        }
+      });
       const skus = ['com.dave6.www.stroller.justdogs.noads', 'com.dave6.www.stroller.justdogs.beer'];
       const products = await RNIap.getProducts({skus});
       console.log({products})
@@ -120,6 +131,10 @@ class Loading extends React.Component {
       return reject(err);
     }
   })
+
+   processNoAdsPurchase() {
+      this.setState({showAds: false});
+   }
 
   submitEmail = (email) => new Promise(async (resolve, reject) => {
     // This is a callback called by the emailCollection modal when the email is submitted
