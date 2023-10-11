@@ -96,18 +96,20 @@ class Loading extends React.Component {
       // check if a user has logged in before
       let uid = await AsyncStorage.getItem('@uid')
       // check if stored UID is on server, if not send back a new one
-      console.log('Try entered', uid)
       try {
+        console.log('Try entered', uid)
         let user = await this.getUserRef(uid);
+        console.log({user})
         user = user.data();
         uid = user.uid;
       } catch (err) {
         uid = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
         console.log('Creating user', uid)
         try {
+          const usersCollection = firestore().collection('users');
           await usersCollection.add({uid});
         } catch {
-          console.log('Could not store new users UID')
+          console.log('Could not store new users UID');
         }
       } finally {
         if (uid) await AsyncStorage.setItem('@uid', uid);
