@@ -22,26 +22,42 @@ class Loading extends React.Component {
       showCollectEmailModal: false,
       showRestoreModal: false,
      };
-    this.items = ['com.dave6.www.stroller.justdogs.noads', 'com.dave6.www.stroller.justdogs.beer'];
     this.purchaseListener = null;
     this.purchaseErrorListener = null;
   }
 
   async componentDidMount() {
     // TODO: Implement FacebookADNetwork
+
     // Init IAP and get purchasable items
-    /*
     try {
       await RNIap.initConnection();
-      const products = await RNIap.getProducts(this.items);
+      // Clear out any pending purchases in the google native vendor
+      await RNIap.flushFailedPurchasesCachedAsPendingAndroid()
+      this.purchaseListener = RNIap.purchaseUpdatedListener(async (purchase) => {
+          try {
+            console.log('purchaseUpdatedListener', purchase);
+            const receipt = purchase.transactionReceipt;
+            if (!receipt) throw new Error('Could not complete transaction, no receipt');
+            // If consumable (can be purchased again)
+            // Check receipt to see if this was a consumable product
+            // This call tells the store I have processed the purchase. If this is not done, the payment will refund.
+            await RNIap.finishTransaction({purchase, isConsumable: false});
+          } catch (err) {
+            console.log('Error in purchase lisetner', err)
+          }
+      });
+      this.purchaseErrorSubscription = RNIap.purchaseErrorListener((error) => { console.warn('purchaseErrorListener', error); });
+      const skus = ['com.dave6.www.stroller.justdogs.noads', 'com.dave6.www.stroller.justdogs.beer'];
+      const products = await RNIap.getProducts({skus});
+      console.log({products})
       this.setState({ products });
     } catch (err) {
       console.log('err in iap init: ', err);
     }
-    */
     try {
       // check if a user has logged in before
-      let uid = await this.getUid();
+      await this.getUid();
     } catch (err) {
       console.log('Could not get UID')
     } finally {
@@ -51,12 +67,10 @@ class Loading extends React.Component {
 
 
   componentWillUnmount() {
-    /*
     if (this.purchaseListener) this.purchaseListener.remove();
     this.purchaseListener = null;
     if (this.purchaseErrorListener) this.purchaseErrorListener.remove();
     this.purchaseErrorListener = null;
-    */
   }
 
   getUserRef = (uid) => new Promise(async (resolve, reject) => {
