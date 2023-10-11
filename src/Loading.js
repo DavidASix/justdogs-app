@@ -39,6 +39,7 @@ class Loading extends React.Component {
             console.log('purchaseUpdatedListener', purchase);
             const receipt = purchase.transactionReceipt;
             if (!receipt) throw new Error('Could not complete transaction, no receipt');
+            this.purchaseSuccessful();
             // If consumable (can be purchased again)
             // Check receipt to see if this was a consumable product
             // This call tells the store I have processed the purchase. If this is not done, the payment will refund.
@@ -47,18 +48,16 @@ class Loading extends React.Component {
             console.log('Error in purchase lisetner', err)
           }
       });
+
       this.purchaseErrorSubscription = RNIap.purchaseErrorListener((error) => {
         switch (error.code) {
-          case ('E_ALREADY_OWNED'): {
-            this.processNoAdsPurchase();
-            break;
-          }
           default: {
             console.log('purchaseErrorListener', error); 
             break;
           }
         }
       });
+
       const skus = ['com.dave6.www.stroller.justdogs.noads', 'com.dave6.www.stroller.justdogs.beer'];
       const products = await RNIap.getProducts({skus});
       console.log({products})
@@ -69,6 +68,7 @@ class Loading extends React.Component {
     try {
       // check if a user has logged in before
       await this.getUid();
+      // TODO: Add check here for previously purchased items
     } catch (err) {
       console.log('Could not get UID')
     } finally {
@@ -132,7 +132,9 @@ class Loading extends React.Component {
     }
   })
 
-   processNoAdsPurchase() {
+   purchaseSuccessful(skus, purchase) {
+      // If purchase = null, func was called in result of E_ALREADY_OWNED error to update server with previously purchased product
+      console.log('Purchase Successful Called: ', skus)
       this.setState({showAds: false});
    }
 
@@ -156,7 +158,10 @@ class Loading extends React.Component {
           <ActivityIndicator size='large' color={c.colors.accent} style={{ position: 'absolute', bottom: 10 }} />
         </>
       );
-      return <InfiniteScroll showAds={this.state.showAds} restorePuchase={() => this.setState({ showRestoreModal: true })}/>
+      return <InfiniteScroll 
+                showAds={this.state.showAds} 
+                restorePuchase={() => this.setState({ showRestoreModal: true })} 
+                purchaseSuccessful={(skus) => this.purchaseSuccessful(skus)} />
   }
 
   render() {

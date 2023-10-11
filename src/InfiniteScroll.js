@@ -68,11 +68,16 @@ class InfiniteScroll extends Component {
   }
 
   onPressRemoveAds = async () => {
+    const skus = ['com.dave6.www.stroller.justdogs.noads'];
     try {
-      //await RNIap.requestPurchase('com.dave6.www.stroller.justdogs.noads', false);
+      await RNIap.requestPurchase({ skus });
     } catch (err) {
-      //console.log('removeAds error: ', err);
-      // Unable to complete purchase, should be handled with an alert
+      if (err.code = 'E_ALREADY_OWNED') {
+        this.props.purchaseSuccessful(skus);
+      } else {
+        // Unable to complete purchase, should be handled with an alert
+        console.log('onPressRemoveAds error: ', err);
+      }
     }
   }
   async handleViewChange(info) {
