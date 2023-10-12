@@ -38,8 +38,7 @@ class Loading extends React.Component {
           try {
             const receipt = purchase.transactionReceipt;
             if (!receipt) throw new Error('Could not complete transaction, no receipt');
-            this.purchaseSuccessful();
-            // If consumable (can be purchased again)
+            await this.purchaseSuccessful(receipt);
             // Check receipt to see if this was a consumable product
             // This call tells the store I have processed the purchase. If this is not done, the payment will refund.
             await RNIap.finishTransaction({purchase, isConsumable: false});
@@ -130,11 +129,23 @@ class Loading extends React.Component {
     }
   })
 
-   purchaseSuccessful(skus, purchase) {
-      // If purchase = null, func was called in result of E_ALREADY_OWNED error to update server with previously purchased product
-      console.log('Purchase Successful Called: ', skus)
-      this.setState({showAds: false});
-   }
+  // After a receipt has been created, process the order on my server to store the receipt for later reference.
+   purchaseSuccessful = (r) => new Promise(async (resolve, reject) => {
+     console.log('Purchase Successful Called')
+    try {
+      const receipt = typeof r === 'string' ? JSON.parse(r) : r;
+      const uid = await this.getUid();
+      const iapCollection = firestore().collection('iap');
+      const iapObject = {uid, ...receipt};
+      await iapCollection.add(iapObject)
+      if (['removeads', 'noads'].some((elem) => receipt.productId.includes(elem)))  {
+        this.setState({showAds: false});
+      }
+      return resolve(true);
+    } catch (err) {
+      return reject(err);
+    }
+   });
 
   submitEmail = (email) => new Promise(async (resolve, reject) => {
     // This is a callback called by the emailCollection modal when the email is submitted

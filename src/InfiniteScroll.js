@@ -73,7 +73,7 @@ class InfiniteScroll extends Component {
       await RNIap.requestPurchase({ skus });
     } catch (err) {
       if (err.code === 'E_ALREADY_OWNED') {
-        this.props.purchaseSuccessful(skus);
+        await this.props.purchaseSuccessful({productId: skus[0]});
       } else {
         // Unable to complete purchase, should be handled with an alert
         console.log('onPressRemoveAds error: ', err);
