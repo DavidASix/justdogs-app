@@ -66,11 +66,16 @@ class Loading extends React.Component {
       console.log('err in iap init: ', err);
     }
     try {
-      // check if a user has logged in before
-      await this.getUid();
-      // TODO: Add check here for previously purchased items
+      // Check if the user has previously purchased items
+      const uid = await this.getUid();
+      const purchases = await this.getPurchases(uid);
+      const purchasedSkus = purchases.map((purchase, i) => purchase.data().productId);
+      console.log({purchases, purchasedSkus})
+      if (purchasedSkus.some((element, i) => element.includes('removeads'))) {
+        this.setState({ showAds: false });
+      }
     } catch (err) {
-      console.log('Could not get UID')
+      console.log('Error fetching purchases: ', err)
     } finally {
       this.setState({ loading: false });
     }
@@ -82,6 +87,7 @@ class Loading extends React.Component {
     this.purchaseListener = null;
     if (this.purchaseErrorListener) this.purchaseErrorListener.remove();
     this.purchaseErrorListener = null;
+    RNIap.endConnection();
   }
 
   getUserRef = (uid) => new Promise(async (resolve, reject) => {
@@ -125,6 +131,18 @@ class Loading extends React.Component {
       return resolve(uid);
     } catch (err) {
       console.log('Either could not get or set async item.')
+      return reject(err);
+    }
+  })
+
+  getPurchases = (uid) => new Promise(async (resolve, reject) => {
+    try {
+      const iapCollection = firestore().collection('iap');
+      const query = iapCollection.where('uid', '==', uid)
+      const snapshot = await query.get();
+      const purchases = snapshot.docs;
+      return resolve(purchases);
+    } catch (err) {
       return reject(err);
     }
   })
