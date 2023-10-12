@@ -36,7 +36,6 @@ class Loading extends React.Component {
       await RNIap.flushFailedPurchasesCachedAsPendingAndroid()
       this.purchaseListener = RNIap.purchaseUpdatedListener(async (purchase) => {
           try {
-            console.log('purchaseUpdatedListener', purchase);
             const receipt = purchase.transactionReceipt;
             if (!receipt) throw new Error('Could not complete transaction, no receipt');
             this.purchaseSuccessful();
@@ -58,9 +57,11 @@ class Loading extends React.Component {
         }
       });
 
-      const skus = ['com.dave6.www.stroller.justdogs.noads', 'com.dave6.www.stroller.justdogs.beer'];
+      const skus = [
+        'com.dave6.www.stroller.justdogs.removeads', 
+        'com.dave6.www.stroller.justdogs.noads', 
+        'com.dave6.www.stroller.justdogs.beer'];
       const products = await RNIap.getProducts({skus});
-      console.log({products})
       this.setState({ products });
     } catch (err) {
       console.log('err in iap init: ', err);
@@ -108,14 +109,11 @@ class Loading extends React.Component {
       let uid = await AsyncStorage.getItem('@uid')
       // check if stored UID is on server, if not send back a new one
       try {
-        console.log('Try entered', uid)
         let user = await this.getUserRef(uid);
-        console.log({user})
         user = user.data();
         uid = user.uid;
       } catch (err) {
         uid = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
-        console.log('Creating user', uid)
         try {
           const usersCollection = firestore().collection('users');
           await usersCollection.add({uid});

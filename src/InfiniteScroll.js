@@ -68,11 +68,11 @@ class InfiniteScroll extends Component {
   }
 
   onPressRemoveAds = async () => {
-    const skus = ['com.dave6.www.stroller.justdogs.noads'];
+    const skus = ['com.dave6.www.stroller.justdogs.removeads'];
     try {
       await RNIap.requestPurchase({ skus });
     } catch (err) {
-      if (err.code = 'E_ALREADY_OWNED') {
+      if (err.code === 'E_ALREADY_OWNED') {
         this.props.purchaseSuccessful(skus);
       } else {
         // Unable to complete purchase, should be handled with an alert
