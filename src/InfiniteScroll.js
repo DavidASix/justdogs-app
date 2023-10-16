@@ -27,22 +27,13 @@ class InfiniteScroll extends Component {
       zoom: true,
       loading: true,
       products: false,
-      showAds: true
+      showAds: true,
+      interstitialAttempts: 0
     };
   }
 
   async componentDidMount() {
       try {
-        /*
-        try {
-          // Load intersitial ads
-          AdMobInterstitial.setAdUnitID(c.admob.inter);
-          AdMobInterstitial.setTestDevices([AdMobInterstitial.simulatorId]);
-          await AdMobInterstitial.requestAd();
-        } catch {
-          // Unable to load ad, no matter. Ad will not show;
-        }
-        */
         // Get initial images to render
         let newImage = await this.getNewUrl();
         let newImage1 = await this.getNewUrl();
@@ -53,6 +44,10 @@ class InfiniteScroll extends Component {
         // Unable to get images from server, user will not be able to scroll as no images in list.
       } finally {
         this.setState({ loading: false, showAds: this.props.showAds });
+        // Preload ads if ads are enabled
+        if (this.props.showAds) {
+          this.initializeInterstitialAds();
+        }
       }
   }
 
@@ -64,6 +59,33 @@ class InfiniteScroll extends Component {
       }
     }
   }
+
+  initializeInterstitialAds() {
+    AppLovinMAX.addInterstitialLoadedEventListener(() => {
+        // Interstitial ad is ready to show. AppLovinMAX.isInterstitialReady(INTERSTITIAL_AD_UNIT_ID) now returns 'true'
+        this.setState({interstitialAttempts: 0})
+    });
+    AppLovinMAX.addInterstitialLoadFailedEventListener(() => {
+        // Interstitial ad failed to load 
+        this.setState({interstitialAttempts: this.state.interstitialAttempts + 1})
+        const retryDelay = Math.pow(2, Math.min(6, this.state.interstitialAttempts));
+        console.log('Interstitial ad failed to load - retrying in ' + retryDelay + 's');
+        setTimeout(() => this.loadInterstitial(), retryDelay * 1000);
+    });
+    AppLovinMAX.addInterstitialAdFailedToDisplayEventListener(() => {
+        // Interstitial ad failed to display. AppLovin recommends that you load the next ad
+        this.loadInterstitial();
+    });
+    AppLovinMAX.addInterstitialHiddenEventListener(() => {
+      this.loadInterstitial();
+    });
+    // Load the first interstitial
+  }
+
+  loadInterstitial() {
+    AppLovinMAX.loadInterstitial(c.keys.appLovinAds.interstitial);
+  }
+
 
   onPressShare = async () => {
     let appUrl = 'https://play.google.com/store/apps/details?id=com.dave6.stroller.justdogs';
@@ -85,6 +107,7 @@ class InfiniteScroll extends Component {
       }
     }
   }
+
   async handleViewChange(info) {
     let { maxViewed, images, currentImageDisplaying } = this.state;
     // Header screen is not counted as an indexed item, so swiping from header to first dog is 0 -> 0 :
@@ -95,7 +118,7 @@ class InfiniteScroll extends Component {
     if (maxViewed < info.changed[0].index) {
       // Every 5 images shown add an Advertisement to the image stack
       // As the image stack starts with 3 images, and begins counting at 0, the ad will show one the second page change from when it's loaded
-      if (info.changed[0].index % 3 === 0 && this.state.showAds) {
+      if (info.changed[0].index % 7 === 0 && this.state.showAds) {
         //console.log('Ad pushed to stack');
         this.setState({ maxViewed: info.changed[0].index, images: [...images, 'largeBanner'] });
       } else {
@@ -105,12 +128,18 @@ class InfiniteScroll extends Component {
 
       // Every 25 images show an interstitial ad
       if (info.changed[0].index % 19 === 0 && this.state.showAds) {
-        return;
         try {
-          //await AdMobInterstitial.requestAd();
-        } catch {
-          //console.log('Error getting ad', err);
+          const interstitialReady = await AppLovinMAX.isInterstitialReady(c.keys.appLovinAds.interstitial);
+          console.log({interstitialReady})
+          if (interstitialReady) {
+            console.log('Calling Show Interstitial')
+            AppLovinMAX.showInterstitial(c.keys.appLovinAds.interstitial);
+          } else {
+            this.loadInterstitial();
+          }
+        } catch (err) {
           // Unable to get add from server, showAd will fail and nott display
+          console.log('Error getting ad', err);
         } finally {
           //AdMobInterstitial.showAd();
         }
