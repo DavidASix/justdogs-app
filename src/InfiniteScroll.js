@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Share
 } from 'react-native';
+import AppLovinMAX from "react-native-applovin-max";
 import * as RNIap from 'react-native-iap';
 import axios from 'axios';
 
@@ -56,8 +57,12 @@ class InfiniteScroll extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    //console.log('Show ads prop changed: ', prevProps.showAds !== this.props.showAds, ' this.props.showAds = ', this.props.showAds);
-    if (prevProps.showAds !== this.props.showAds) this.setState({ showAds: this.props.showAds });
+    if (prevProps.showAds !== this.props.showAds) {
+      this.setState({ showAds: this.props.showAds });
+      if (!this.props.showAds) {
+        AppLovinMAX.hideBanner(c.keys.appLovinAds.banner)
+      }
+    }
   }
 
   onPressShare = async () => {
@@ -90,7 +95,7 @@ class InfiniteScroll extends Component {
     if (maxViewed < info.changed[0].index) {
       // Every 5 images shown add an Advertisement to the image stack
       // As the image stack starts with 3 images, and begins counting at 0, the ad will show one the second page change from when it's loaded
-      if (info.changed[0].index % 7 === 0 && this.state.showAds) {
+      if (info.changed[0].index % 3 === 0 && this.state.showAds) {
         //console.log('Ad pushed to stack');
         this.setState({ maxViewed: info.changed[0].index, images: [...images, 'largeBanner'] });
       } else {
@@ -140,11 +145,9 @@ class InfiniteScroll extends Component {
               source={require('./images/logo.png')}
               resizeMode='contain'
               style={{ height: '100%', width: '100%', position: 'absolute' }} />
-            {/*<AdMobBanner
-                adSize="mediumRectangle"
-                adUnitID={c.admob.mRec}
-                testDevices={[AdMobBanner.simulatorId]}
-                />*/}
+            <AppLovinMAX.AdView 
+              adUnitId={c.keys.appLovinAds.mrec}
+              adFormat={AppLovinMAX.AdFormat.MREC}/>
           </View>
 
           <View style={styles.textBox}>
@@ -166,11 +169,9 @@ class InfiniteScroll extends Component {
             source={require('./images/logo.png')}
             resizeMode='contain'
             style={{ height: '100%', width: '100%', position: 'absolute' }} />
-          {/*<AdMobBanner
-            adSize='banner'
-            adUnitID={c.admob.banner}
-            testDevices={[AdMobBanner.simulatorId]}
-            />*/}
+          <AppLovinMAX.AdView 
+              adUnitId={c.keys.appLovinAds.banner}
+              adFormat={AppLovinMAX.AdFormat.BANNER}/>
         </View>
       );
     }

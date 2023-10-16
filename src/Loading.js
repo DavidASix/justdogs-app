@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import LottieView from 'lottie-react-native';
 import * as RNIap from 'react-native-iap';
+import AppLovinMAX from "react-native-applovin-max";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import InfiniteScroll from './InfiniteScroll';
@@ -27,8 +28,13 @@ class Loading extends React.Component {
   }
 
   async componentDidMount() {
-    // TODO: Implement FacebookADNetwork
-
+    // Initialize the ad configuration for App Lovin
+    try {
+      await AppLovinMAX.initialize(c.keys.appLovinSdkKey);
+    } catch (err) {
+      console.log('Error configuring ads')
+      console.log({err});
+    }
     // Init IAP and get purchasable items
     try {
       await RNIap.initConnection();
