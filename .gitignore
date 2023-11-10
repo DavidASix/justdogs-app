@@ -72,3 +72,6 @@ urls.js
 admob.js
 
 google-services.json
+
+**/gradle.properties
+gradle.properties
