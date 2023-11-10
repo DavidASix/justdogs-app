@@ -5,7 +5,9 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
-  Share
+  Share,
+  Alert,
+  Text
 } from 'react-native';
 import AppLovinMAX from "react-native-applovin-max";
 import * as RNIap from 'react-native-iap';
@@ -106,6 +108,17 @@ class InfiniteScroll extends Component {
         console.log('onPressRemoveAds error: ', err);
       }
     }
+  }
+
+  onPressReset() {
+    Alert.alert(
+      'Reset your account', 
+      'Resetting your account will delete your data from our server, but will also non-refundably delete your purchases.',
+      [
+        {text: 'Cancel', style: 'cancel', onPress: () => {}},
+        {text: 'Reset Account', style: 'default', onPress: () => this.props.resetAccount()}
+      ],
+      {cancelable: true});
   }
 
   async handleViewChange(info) {
@@ -230,6 +243,15 @@ class InfiniteScroll extends Component {
         </>
       );
     }
+    return (
+      <>
+        <TouchableOpacity
+          style={styles.button}
+          onLongPress={() => this.onPressReset()}>
+          <Text>💫</Text>
+        </TouchableOpacity>
+      </>
+    );
   }
 
   render() {
