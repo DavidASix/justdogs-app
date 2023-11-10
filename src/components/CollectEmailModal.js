@@ -27,10 +27,11 @@ function RestoreModal(props) {
             dissmissModal()
           } 
         catch (err) {
+            console.log(err);
             Alert.alert(
                 err.title,
                 err.body,
-                [{ text: 'OK', onPress: () => this.setState({ emailSubmitLoading: false }) }]);
+                [{ text: 'OK', onPress: () => setEmailSubmitLoading(false) }]);
         }
       }
 

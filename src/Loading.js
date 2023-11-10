@@ -74,11 +74,13 @@ class Loading extends React.Component {
     try {
       // Check if the user has previously purchased items
       const uid = await this.getUid();
+      console.log({uid})
       const purchases = await this.getPurchases(uid);
       const purchasedSkus = purchases.map((purchase, i) => purchase.data().productId);
       console.log({purchases, purchasedSkus})
       if (purchasedSkus.some((element, i) => element.includes('removeads'))) {
         this.setState({ showAds: false });
+        //TODO: Add check for existing email, if there isn't one then collect it
       }
     } catch (err) {
       console.log('Error fetching purchases: ', err)
@@ -165,8 +167,11 @@ class Loading extends React.Component {
       if (['removeads', 'noads'].some((elem) => receipt.productId.includes(elem)))  {
         this.setState({showAds: false});
       }
+      this.setState({ showCollectEmailModal: true })
       return resolve(true);
     } catch (err) {
+      console.log('Error in purchase succesful')
+      console.log(err)
       return reject(err);
     }
    });
@@ -184,6 +189,29 @@ class Loading extends React.Component {
       }
   })
 
+  resetAccount = async () => {
+      try {
+        let uid = await this.getUid();
+        const user = await this.getUserRef(uid);
+        // Delete user ref then delete iap ref
+        user.ref.delete();
+        const iapCollection = firestore().collection('iap');
+        const query = iapCollection.where('userid', '==', uid);
+        const snapshot = await query.get();
+
+        if (!snapshot.empty) {
+          snapshot.docs.forEach(async (doc) => {
+            await doc.ref.delete();
+          });
+        }
+        await AsyncStorage.removeItem('@uid', null);
+        this.setState({showAds: true});
+      } catch (err) {
+
+        console.log(err);
+      }
+  }
+
   renderLoading() {
       if (this.state.loading) return (
         <>
@@ -194,7 +222,8 @@ class Loading extends React.Component {
       return <InfiniteScroll 
                 showAds={this.state.showAds} 
                 restorePuchase={() => this.setState({ showRestoreModal: true })} 
-                purchaseSuccessful={(skus) => this.purchaseSuccessful(skus)} />
+                purchaseSuccessful={(skus) => this.purchaseSuccessful(skus)} 
+                resetAccount={() => this.resetAccount()} />
   }
 
   render() {
@@ -203,7 +232,7 @@ class Loading extends React.Component {
         <CollectEmailModal
           showCollectEmailModal={this.state.showCollectEmailModal}
           dissmissModal={() => this.setState({showCollectEmailModal: false})}
-          submitEmail={(email) => submitEmail(email)} />
+          submitEmail={(email) => this.submitEmail(email)} />
 
         <RestoreModal 
           showRestoreModal={this.state.showRestoreModal} 
