@@ -75,3 +75,4 @@ google-services.json
 
 **/gradle.properties
 gradle.properties
+android/gradle.properties
