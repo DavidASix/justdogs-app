@@ -90,7 +90,7 @@ class InfiniteScroll extends Component {
   onPressShare = async () => {
     let appUrl = 'https://play.google.com/store/apps/details?id=com.dave6.stroller.justdogs';
     let message = `Come look at some cute dogs with me! ${appUrl}`;
-    if (this.state.currentImageDisplaying !== false) message = `Check out this dog I found on Dog Scroll! ${this.state.images[this.state.currentImageDisplaying].url} See more on the app: ${appUrl}`;
+    if (this.state.currentImageDisplaying !== false) message = `Check out this dog I found on Just Dogs! ${this.state.images[this.state.currentImageDisplaying].url} See more on the app: ${appUrl}`;
     await Share.share({ message });
   }
 
