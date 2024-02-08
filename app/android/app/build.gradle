@@ -79,8 +79,8 @@ android {
         applicationId "com.dave6.stroller.justdogs"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "1.9"
+        versionCode 11
+        versionName "1.91"
         missingDimensionStrategy "store", "play"
     }
     signingConfigs {
